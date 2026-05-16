@@ -132,7 +132,7 @@
     @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     .card-back-face { animation: fadeUp .22s ease; }
 
-    .card-word { font-family:'Playfair Display',serif; font-size:3rem; font-weight:700; line-height:1.05; letter-spacing:-0.02em; color:var(--text); margin-bottom:8px; }
+    .card-word { font-family:'Playfair Display',serif; font-size:var(--word-size,3rem); font-weight:700; line-height:1.05; letter-spacing:-0.02em; color:var(--text); margin-bottom:8px; }
     .card-pos  { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent); margin-bottom:40px; }
     .card-front-foot { display:flex; align-items:center; justify-content:space-between; }
     .speak-btn {
@@ -235,6 +235,88 @@
     .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
+
+    /* ── 5 THEMES ─────────────────────────────────────────── */
+    body.theme-mist {
+      --bg:#f0f4f8; --surface:#fff; --surface2:#e4eaf3; --surface3:#d8e0ee;
+      --border:#bcc8dc; --text:#1a2030; --text-dim:#506080; --text-muted:#8099b0;
+      --accent:#2d5fa8; --accent-lt:#3d72c0; --accent-dim:rgba(45,95,168,.10);
+      --red:#b83030; --red-dim:rgba(184,48,48,.09);
+      --orange:#b06020; --orange-dim:rgba(176,96,32,.09);
+      --blue:#1a50a0; --blue-dim:rgba(26,80,160,.09);
+      --green:#207845; --green-dim:rgba(32,120,69,.09);
+    }
+    body.theme-midnight {
+      --bg:#16181d; --surface:#1e2028; --surface2:#252830; --surface3:#2e3040;
+      --border:#404258; --text:#d8dae5; --text-dim:#8890a5; --text-muted:#555a6e;
+      --accent:#d4a040; --accent-lt:#e0b850; --accent-dim:rgba(212,160,64,.15);
+      --red:#d05060; --red-dim:rgba(208,80,96,.14);
+      --orange:#d08040; --orange-dim:rgba(208,128,64,.14);
+      --blue:#5090d8; --blue-dim:rgba(80,144,216,.14);
+      --green:#50b870; --green-dim:rgba(80,184,112,.14);
+    }
+    body.theme-jade {
+      --bg:#f0f6f2; --surface:#fff; --surface2:#e2eee6; --surface3:#d4e6da;
+      --border:#b0cdb8; --text:#182820; --text-dim:#427055; --text-muted:#789080;
+      --accent:#287855; --accent-lt:#309068; --accent-dim:rgba(40,120,85,.10);
+      --red:#b03030; --red-dim:rgba(176,48,48,.09);
+      --orange:#b06020; --orange-dim:rgba(176,96,32,.09);
+      --blue:#2060a8; --blue-dim:rgba(32,96,168,.09);
+      --green:#207845; --green-dim:rgba(32,120,69,.09);
+    }
+    body.theme-contrast {
+      --bg:#fff; --surface:#fff; --surface2:#f0f0f0; --surface3:#e2e2e2;
+      --border:#888; --text:#000; --text-dim:#222; --text-muted:#555;
+      --accent:#0050c8; --accent-lt:#0060e0; --accent-dim:rgba(0,80,200,.10);
+      --red:#cc0000; --red-dim:rgba(204,0,0,.09);
+      --orange:#aa4400; --orange-dim:rgba(170,68,0,.09);
+      --blue:#0050c8; --blue-dim:rgba(0,80,200,.09);
+      --green:#006020; --green-dim:rgba(0,96,32,.09);
+    }
+
+    /* ── SETTINGS UI ───────────────────────────────────────── */
+    .theme-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:4px; }
+    .theme-card {
+      border:2px solid var(--border); border-radius:10px;
+      overflow:hidden; cursor:pointer; transition:all .15s;
+    }
+    .theme-card:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.1); }
+    .theme-card.active { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-dim),0 0 0 3px var(--accent); }
+    .theme-swatch { height:48px; display:flex; }
+    .theme-label { font-size:11px; text-align:center; padding:6px 4px; background:var(--surface); color:var(--text-dim); line-height:1.3; }
+
+    .size-row { display:flex; gap:8px; margin-top:2px; }
+    .size-btn {
+      flex:1; padding:8px; background:var(--surface2);
+      border:1.5px solid var(--border); border-radius:var(--r-sm);
+      color:var(--text-dim); font-family:inherit; font-size:13px;
+      cursor:pointer; transition:all .15s;
+    }
+    .size-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .size-btn:hover:not(.active) { background:var(--surface3); color:var(--text); }
+
+    .shortcut-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .sc-row { display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--surface2); border-radius:var(--r-sm); padding:8px 12px; }
+    .sc-label { font-size:13px; color:var(--text-dim); }
+    .key-btn {
+      min-width:70px; padding:5px 12px;
+      background:var(--surface); border:1.5px solid var(--border);
+      border-radius:6px; font-family:'DM Mono',monospace;
+      font-size:13px; color:var(--text); cursor:pointer; transition:all .15s; text-align:center;
+    }
+    .key-btn:hover { border-color:var(--accent-lt); }
+    .key-btn.capturing { border-color:var(--accent); color:var(--accent); animation:pulse .8s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+    .toggle-row { display:flex; align-items:center; gap:10px; cursor:pointer; padding:4px 0; }
+    .toggle-row input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+    .toggle-row span { font-size:14px; color:var(--text-dim); }
+
+    @media (max-width:600px) {
+      .theme-grid { grid-template-columns:repeat(3,1fr); }
+      .shortcut-grid { grid-template-columns:1fr; }
+    }
+
     @media (max-width:600px) {
       nav { padding:0 14px; } .nav-logo { margin-right:14px; } .nav-link { padding:6px 10px; font-size:12px; }
       .view { padding:20px 14px; } #view-study { padding:20px 14px; }
@@ -290,6 +372,7 @@
       <button class="nav-link active" id="nav-study"  onclick="switchView('study')">📖 學習</button>
       <button class="nav-link"        id="nav-manage" onclick="switchView('manage')">📚 單字庫</button>
       <button class="nav-link"        id="nav-stats"  onclick="switchView('stats')">📊 統計</button>
+      <button class="nav-link"        id="nav-settings" onclick="switchView('settings')">⚙ 設定</button>
     </div>
     <div class="nav-right">
       <span id="nav-remain" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)"></span>
@@ -322,6 +405,17 @@
     </section>
   </main>
 </div>
+
+
+    <!-- SETTINGS VIEW -->
+    <section class="view" id="view-settings">
+      <div style="max-width:680px;margin:0 auto">
+        <div class="stats-title">設定</div>
+        <div id="settings-content">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)"><span class="spinner"></span></div>
+        </div>
+      </div>
+    </section>
 
 <!-- WORD MODAL -->
 <div class="modal-overlay hidden" id="word-modal">
@@ -452,6 +546,7 @@ function switchView(v) {
   document.getElementById('nav-'+v).classList.add('active');
   if (v==='manage') loadManage();
   if (v==='stats')  loadStats();
+  if (v==='settings') loadSettingsView();
 }
 
 function sm2(interval, easiness, reps, rating) {
@@ -545,14 +640,14 @@ function renderStudy() {
             <button class="r-btn r-good"  onclick="rate(2)">Good<span class="r-sub">正常</span></button>
             <button class="r-btn r-easy"  onclick="rate(3)">Easy<span class="r-sub">長間隔</span></button>
           </div>
-          <div class="keyboard-hints"><kbd>Space</kbd> 翻面 &nbsp; <kbd>1</kbd> Again &nbsp;<kbd>2</kbd> Hard &nbsp;<kbd>3</kbd> Good &nbsp;<kbd>4</kbd> Easy</div>
+          ${settings.showHints?`<div class="keyboard-hints"><kbd>\${codeToDisplay(settings.shortcuts.flip)}</kbd> 翻面 &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.again)}</kbd> Again &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.hard)}</kbd> Hard &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.good)}</kbd> Good &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.easy)}</kbd> Easy &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.audio)}</kbd> 播音</div>`:''}
         </div>
       </div>
     </div>`;
 }
 
 function handleCardClick(e) { if(e.target.tagName==='BUTTON') return; doFlip(e); }
-function doFlip(e) { if(e) e.stopPropagation(); if(flipped) return; flipped=true; document.getElementById('flashcard').classList.add('flipped'); }
+function doFlip(e) { if(e) e.stopPropagation(); if(flipped) return; flipped=true; document.getElementById('flashcard').classList.add('flipped'); if(settings.autoAudio&&queue[qIdx])speak(null,queue[qIdx].word); }
 
 async function rate(rating) {
   const card=queue[qIdx], rev=card._review||{interval:0,easiness:2.5,repetitions:0};
@@ -570,13 +665,18 @@ function updateNavRemain() {
 function speak(e,text) { if(e) e.stopPropagation(); if(!window.speechSynthesis) return; window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=0.85; window.speechSynthesis.speak(u); }
 
 document.addEventListener('keydown',e=>{
+  if(handleCapture(e)) return;
   if(!document.getElementById('app').classList.contains('active')) return;
   if(document.querySelector('.view.active')?.id!=='view-study') return;
   if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-  if(e.code==='Space'){e.preventDefault();doFlip(null);return;}
+  const s=settings.shortcuts;
+  if(e.code===s.audio){e.preventDefault();if(queue[qIdx])speak(null,queue[qIdx].word);return;}
+  if(e.code===s.flip){e.preventDefault();doFlip(null);return;}
   if(!flipped) return;
-  const map={'1':0,'2':1,'3':2,'4':3};
-  if(map[e.key]!==undefined) rate(map[e.key]);
+  if(e.code===s.again)rate(0);
+  else if(e.code===s.hard)rate(1);
+  else if(e.code===s.good)rate(2);
+  else if(e.code===s.easy)rate(3);
 });
 
 async function loadManage() {
@@ -703,6 +803,198 @@ let toastT;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
 ['word-modal','csv-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});});
 
+// ── SETTINGS ──────────────────────────────────────────────
+const DEFAULT_SETTINGS = {
+  theme: 'warm',
+  cardSize: 'md',
+  shortcuts: { flip:'Space', again:'Digit1', hard:'Digit2', good:'Digit3', easy:'Digit4', audio:'KeyP' },
+  daily: 20,
+  newPerDay: 5,
+  showHints: true,
+  autoAudio: false,
+};
+let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('wv_settings');
+    if (raw) {
+      const s = JSON.parse(raw);
+      settings = { ...DEFAULT_SETTINGS, ...s, shortcuts: { ...DEFAULT_SETTINGS.shortcuts, ...(s.shortcuts||{}) } };
+    }
+  } catch {}
+  applyTheme();
+  if (cfg) { cfg.daily = settings.daily; cfg.newPerDay = settings.newPerDay; }
+}
+
+function applyTheme() {
+  ['mist','midnight','jade','contrast'].forEach(t => document.body.classList.remove('theme-'+t));
+  if (settings.theme !== 'warm') document.body.classList.add('theme-' + settings.theme);
+  const sizeMap = { sm:'2rem', md:'3rem', lg:'3.8rem', xl:'4.8rem' };
+  document.documentElement.style.setProperty('--word-size', sizeMap[settings.cardSize]||'3rem');
+}
+
+function saveSettings() {
+  settings.daily     = parseInt(document.getElementById('s-daily')?.value) || 20;
+  settings.newPerDay = parseInt(document.getElementById('s-new')?.value)   || 5;
+  settings.showHints = document.getElementById('s-hints')?.checked ?? true;
+  settings.autoAudio = document.getElementById('s-autoaudio')?.checked ?? false;
+  const ab = document.querySelector('.size-btn.active');
+  if (ab) settings.cardSize = ab.dataset.size;
+  if (cfg) { cfg.daily = settings.daily; cfg.newPerDay = settings.newPerDay; }
+  localStorage.setItem('wv_settings', JSON.stringify(settings));
+  applyTheme();
+  showToast('✓ 設定已儲存');
+}
+
+function setTheme(t) {
+  settings.theme = t;
+  applyTheme();
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme===t));
+  localStorage.setItem('wv_settings', JSON.stringify(settings));
+}
+
+function setCardSize(s) {
+  settings.cardSize = s;
+  applyTheme();
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('active', b.dataset.size===s));
+  localStorage.setItem('wv_settings', JSON.stringify(settings));
+}
+
+let capturingAction = null;
+
+function startCapture(action) {
+  if (capturingAction) {
+    const old = document.querySelector(`[data-action="${capturingAction}"]`);
+    if (old) { old.textContent = codeToDisplay(settings.shortcuts[capturingAction]); old.classList.remove('capturing'); }
+  }
+  capturingAction = action;
+  const btn = document.querySelector(`[data-action="${action}"]`);
+  if (btn) { btn.textContent = '請按鍵…'; btn.classList.add('capturing'); }
+}
+
+function handleCapture(e) {
+  if (!capturingAction) return false;
+  const skip = ['ShiftLeft','ShiftRight','ControlLeft','ControlRight','AltLeft','AltRight','MetaLeft','MetaRight'];
+  if (skip.includes(e.code)) return false;
+  e.preventDefault(); e.stopPropagation();
+  settings.shortcuts[capturingAction] = e.code;
+  const btn = document.querySelector(`[data-action="${capturingAction}"]`);
+  if (btn) { btn.textContent = codeToDisplay(e.code); btn.classList.remove('capturing'); }
+  capturingAction = null;
+  localStorage.setItem('wv_settings', JSON.stringify(settings));
+  return true;
+}
+
+function resetShortcuts() {
+  settings.shortcuts = { ...DEFAULT_SETTINGS.shortcuts };
+  localStorage.setItem('wv_settings', JSON.stringify(settings));
+  loadSettingsView();
+  showToast('已恢復預設快捷鍵');
+}
+
+function codeToDisplay(code) {
+  if (!code) return '—';
+  const m = {
+    Space:'Space', Enter:'↩', Backspace:'⌫', Tab:'Tab', Escape:'Esc',
+    ArrowUp:'↑', ArrowDown:'↓', ArrowLeft:'←', ArrowRight:'→',
+    Digit0:'0',Digit1:'1',Digit2:'2',Digit3:'3',Digit4:'4',
+    Digit5:'5',Digit6:'6',Digit7:'7',Digit8:'8',Digit9:'9',
+    F1:'F1',F2:'F2',F3:'F3',F4:'F4',F5:'F5',F6:'F6',
+    F7:'F7',F8:'F8',F9:'F9',F10:'F10',F11:'F11',F12:'F12',
+  };
+  if (m[code]) return m[code];
+  if (code.startsWith('Key')) return code.slice(3);
+  return code;
+}
+
+function loadSettingsView() {
+  const actions = [
+    {key:'flip',  label:'翻面'},
+    {key:'again', label:'Again（重來）'},
+    {key:'hard',  label:'Hard（困難）'},
+    {key:'good',  label:'Good（記得）'},
+    {key:'easy',  label:'Easy（太簡單）'},
+    {key:'audio', label:'播放發音'},
+  ];
+  const themes = [
+    {id:'warm',    label:'暖紙',     bg:'#f5f3ef', acc:'#a85818'},
+    {id:'mist',    label:'霧藍',     bg:'#f0f4f8', acc:'#2d5fa8'},
+    {id:'midnight',label:'深夜',     bg:'#16181d', acc:'#d4a040'},
+    {id:'jade',    label:'翡翠',     bg:'#f0f6f2', acc:'#287855'},
+    {id:'contrast',label:'純白對比', bg:'#ffffff', acc:'#0050c8'},
+  ];
+
+  document.getElementById('settings-content').innerHTML = `
+    <div class="stats-block">
+      <div class="block-title">外觀主題</div>
+      <div class="theme-grid">
+        ${themes.map(t=>`
+          <div class="theme-card ${settings.theme===t.id?'active':''}" data-theme="${t.id}" onclick="setTheme('${t.id}')">
+            <div class="theme-swatch">
+              <div style="flex:1;background:${t.bg}"></div>
+              <div style="width:28px;background:${t.acc}"></div>
+            </div>
+            <div class="theme-label">${t.label}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="stats-block">
+      <div class="block-title">單字卡字體大小</div>
+      <div class="size-row">
+        ${[['sm','小 Aa'],['md','中 Aa'],['lg','大 Aa'],['xl','特大 Aa']].map(([s,l])=>`
+          <button class="size-btn ${settings.cardSize===s?'active':''}" data-size="${s}" onclick="setCardSize('${s}')">${l}</button>`).join('')}
+      </div>
+      <div style="margin-top:18px;padding:20px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
+        <div style="font-family:'Playfair Display',serif;font-size:var(--word-size,3rem);color:var(--text);line-height:1.1">ambitious</div>
+        <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--accent);margin-top:6px">adj.</div>
+      </div>
+    </div>
+
+    <div class="stats-block">
+      <div class="block-title">快捷鍵設定</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">點擊按鈕後，按下任意鍵來設定；在學習畫面中生效</p>
+      <div class="shortcut-grid">
+        ${actions.map(a=>`
+          <div class="sc-row">
+            <span class="sc-label">${a.label}</span>
+            <button class="key-btn" data-action="${a.key}" onclick="startCapture('${a.key}')">${codeToDisplay(settings.shortcuts[a.key])}</button>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-ghost" onclick="resetShortcuts()" style="margin-top:14px;font-size:12px">↺ 恢復預設快捷鍵</button>
+    </div>
+
+    <div class="stats-block">
+      <div class="block-title">學習設定</div>
+      <div class="form-group">
+        <label>每日複習上限（張）</label>
+        <input type="number" id="s-daily" value="${settings.daily}" min="5" max="500">
+      </div>
+      <div class="form-group">
+        <label>每日最多新單字</label>
+        <input type="number" id="s-new" value="${settings.newPerDay}" min="0" max="100">
+      </div>
+    </div>
+
+    <div class="stats-block">
+      <div class="block-title">其他設定</div>
+      <label class="toggle-row">
+        <input type="checkbox" id="s-hints" ${settings.showHints?'checked':''}>
+        <span>學習時顯示快捷鍵提示列</span>
+      </label>
+      <label class="toggle-row" style="margin-top:12px">
+        <input type="checkbox" id="s-autoaudio" ${settings.autoAudio?'checked':''}>
+        <span>翻牌後自動播放單字發音</span>
+      </label>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="saveSettings()" style="padding:13px">✓ 儲存設定</button>
+  `;
+}
+
+
+loadSettings();
 boot();
 </script>
 </body>
