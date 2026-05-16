@@ -373,6 +373,7 @@
       <button class="nav-link"        id="nav-manage" onclick="switchView('manage')">📚 單字庫</button>
       <button class="nav-link"        id="nav-stats"  onclick="switchView('stats')">📊 統計</button>
       <button class="nav-link"        id="nav-settings" onclick="switchView('settings')">⚙ 設定</button>
+      <button class="nav-link"        id="nav-social"   onclick="switchView('social')">👥 社交</button>
     </div>
     <div class="nav-right">
       <span id="nav-remain" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)"></span>
@@ -403,11 +404,6 @@
       <div class="stats-block"><div class="block-title">間隔分佈</div><div id="dist-bars"></div></div>
       <div class="stats-block"><div class="block-title">即將到期（未來 7 天）</div><div id="upcoming-list"></div></div>
     </section>
-  </main>
-</div>
-
-
-    <!-- SETTINGS VIEW -->
     <section class="view" id="view-settings">
       <div style="max-width:680px;margin:0 auto">
         <div class="stats-title">設定</div>
@@ -416,6 +412,16 @@
         </div>
       </div>
     </section>
+    <section class="view" id="view-social">
+      <div style="max-width:720px;margin:0 auto">
+        <div class="stats-title">學習社群</div>
+        <div id="social-content">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)"><span class="spinner"></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
 
 <!-- WORD MODAL -->
 <div class="modal-overlay hidden" id="word-modal">
@@ -544,9 +550,10 @@ function switchView(v) {
   document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.getElementById('nav-'+v).classList.add('active');
-  if (v==='manage') loadManage();
-  if (v==='stats')  loadStats();
+  if (v==='manage')   loadManage();
+  if (v==='stats')    loadStats();
   if (v==='settings') loadSettingsView();
+  if (v==='social')   loadSocial();
 }
 
 function sm2(interval, easiness, reps, rating) {
@@ -578,10 +585,11 @@ async function loadSession() {
   if (newSlots>0) {
     const { data: revIds } = await sb.from('reviews').select('word_id').eq('username',currentUser);
     const reviewedIds=(revIds||[]).map(r=>r.word_id);
-    let q=sb.from('words').select('*').order('created_at').limit(newSlots);
+    let q=sb.from('words').select('*').limit(Math.min(newSlots*10,200));
     if (reviewedIds.length>0) q=q.not('id','in',`(${reviewedIds.join(',')})`);
     const { data: fresh } = await q;
-    newCards=(fresh||[]).map(w=>({...w, _review:null}));
+    const shuffled=(fresh||[]).sort(()=>Math.random()-0.5).slice(0,newSlots);
+    newCards=shuffled.map(w=>({...w, _review:null}));
   }
 
   const merged=[...reviewCards];
@@ -1003,6 +1011,55 @@ function loadSettingsView() {
   `;
 }
 
+
+async function loadSocial() {
+  const el = document.getElementById('social-content');
+  el.innerHTML = '<div style="text-align:center;padding:40px"><span class="spinner"></span></div>';
+  const today = todayStr();
+  const { data: allReviews, error } = await sb.from('reviews').select('username,interval,due_date,repetitions,last_reviewed');
+  if (error || !allReviews?.length) {
+    el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">目前沒有使用者資料</div>';
+    return;
+  }
+  const userMap = {};
+  allReviews.forEach(r => { if (!userMap[r.username]) userMap[r.username] = []; userMap[r.username].push(r); });
+  const isAdmin = currentUser === 'rbb';
+  const users = Object.keys(userMap).sort();
+  el.innerHTML = users.map(u => {
+    const revs = userMap[u];
+    const total = revs.length;
+    const dueToday = revs.filter(r => r.due_date <= today).length;
+    const mature = revs.filter(r => r.interval >= 21).length;
+    const avgIvl = total ? (revs.reduce((s,r) => s + r.interval, 0) / total).toFixed(1) : 0;
+    const lastReviewed = revs.reduce((latest,r) => (!r.last_reviewed ? latest : (!latest || r.last_reviewed > latest ? r.last_reviewed : latest)), null);
+    const lastStr = lastReviewed ? lastReviewed.split('T')[0] : '—';
+    const isSelf = u === currentUser;
+    const canDelete = isAdmin && u !== 'rbb';
+    return `
+      <div class="stats-block" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-family:'Playfair Display',serif;font-size:1.15rem">${esc(u)}${isSelf ? ' <span style="font-size:11px;color:var(--accent);font-family:\'Noto Sans TC\',sans-serif">(你)</span>' : ''}</div>
+          ${canDelete ? `<button class="btn btn-ghost" onclick="deleteUser('${escJs(u)}')" style="font-size:12px;color:var(--red);border-color:var(--red)">🗑 刪除資料</button>` : ''}
+        </div>
+        <div class="stats-grid" style="margin-bottom:0">
+          <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-lbl">已學單字</div></div>
+          <div class="stat-card"><div class="stat-value">${dueToday}</div><div class="stat-lbl">今日待複習</div></div>
+          <div class="stat-card"><div class="stat-value">${mature}</div><div class="stat-lbl">成熟單字 ≥21d</div></div>
+          <div class="stat-card"><div class="stat-value">${avgIvl}d</div><div class="stat-lbl">平均間隔</div></div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">最後複習：${lastStr}</div>
+      </div>`;
+  }).join('');
+}
+
+async function deleteUser(username) {
+  if (currentUser !== 'rbb') return;
+  if (!confirm(`確定要刪除「${username}」的所有學習資料？\n此操作無法復原。`)) return;
+  const { error } = await sb.from('reviews').delete().eq('username', username);
+  if (error) { showToast('刪除失敗：' + error.message); return; }
+  showToast(`✓ 已刪除 ${username} 的資料`);
+  loadSocial();
+}
 
 loadSettings();
 boot();
