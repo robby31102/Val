@@ -483,7 +483,7 @@ async function loadSession() {
   if (newSlots>0) {
     const { data: revIds } = await sb.from('reviews').select('word_id').eq('username',currentUser);
     const reviewedIds=(revIds||[]).map(r=>r.word_id);
-    let q=sb.from('words').select('*').eq('username',currentUser).order('created_at').limit(newSlots);
+    let q=sb.from('words').select('*').order('created_at').limit(newSlots);
     if (reviewedIds.length>0) q=q.not('id','in',`(${reviewedIds.join(',')})`);
     const { data: fresh } = await q;
     newCards=(fresh||[]).map(w=>({...w, _review:null}));
@@ -581,13 +581,13 @@ document.addEventListener('keydown',e=>{
 
 async function loadManage() {
   const today=todayStr(), from=(managePage-1)*PAGE, to=from+PAGE-1;
-  let q=sb.from('words').select('id,word,pos,definition,created_at',{count:'exact'}).eq('username',currentUser).order('word').range(from,to);
+  let q=sb.from('words').select('id,word,pos,definition,created_at',{count:'exact'}).order('word').range(from,to);
   if(searchQ) q=q.or(`word.ilike.%${searchQ}%,definition.ilike.%${searchQ}%`);
   const {data:words,count}=await q;
   manageWords=words||[]; manageTotal=count||0;
   document.getElementById('manage-count').textContent=`共 ${manageTotal} 個單字`;
   const ids=manageWords.map(w=>w.id); let revMap={};
-  if(ids.length){ const {data:revs}=await sb.from('reviews').select('word_id,due_date,interval').in('word_id',ids); (revs||[]).forEach(r=>revMap[r.word_id]=r); }
+  if(ids.length){ const {data:revs}=await sb.from('reviews').select('word_id,due_date,interval').in('word_id',ids).eq('username',currentUser); (revs||[]).forEach(r=>revMap[r.word_id]=r); }
   const tbody=document.getElementById('word-tbody');
   if(!manageWords.length){ tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--text-muted)">${searchQ?'找不到符合的單字':'尚無單字，點右上角「＋ 新增」開始'}</td></tr>`; }
   else {
@@ -637,13 +637,13 @@ async function submitWord() {
   const word=document.getElementById('f-word').value.trim(), def=document.getElementById('f-def').value.trim();
   if(!word||!def){showToast('單字和定義為必填');return;}
   const sentences=[...document.querySelectorAll('#sentences-list input')].map(i=>i.value.trim()).filter(Boolean);
-  const payload={username:currentUser,word,pos:document.getElementById('f-pos').value||null,definition:def,sentences,notes:document.getElementById('f-notes').value.trim()||null};
+  const payload={word,pos:document.getElementById('f-pos').value||null,definition:def,sentences,notes:document.getElementById('f-notes').value.trim()||null};
   if(editId){await sb.from('words').update(payload).eq('id',editId);showToast('✓ 已更新');}
   else{await sb.from('words').insert(payload);showToast('✓ 已新增');}
   closeWordModal(); loadManage();
 }
 async function delWord(id){
-  if(!confirm('確定要刪除這個單字及其學習紀錄？')) return;
+  if(!confirm('確定要從共用單字庫刪除這個單字？\n（所有使用者的學習紀錄也會一併刪除）')) return;
   await sb.from('words').delete().eq('id',id);
   showToast('已刪除'); loadManage();
   queue=queue.filter(c=>c.id!==id);
@@ -659,7 +659,7 @@ async function importCsv(){
     const cols=parseCsvLine(line); if(cols.length<3) continue;
     const [word,pos,definition,s1,s2,notes]=cols.map(c=>c?.trim());
     if(!word||!definition) continue;
-    rows.push({username:currentUser,word,pos:pos||null,definition,sentences:[s1,s2].filter(Boolean),notes:notes||null});
+    rows.push({word,pos:pos||null,definition,sentences:[s1,s2].filter(Boolean),notes:notes||null});
   }
   if(!rows.length){showToast('沒有有效的資料行');return;}
   for(let i=0;i<rows.length;i+=100){const{error}=await sb.from('words').insert(rows.slice(i,i+100));if(error){showToast('匯入失敗：'+error.message);return;}}
@@ -676,7 +676,7 @@ async function loadStats(){
   const today=todayStr(), f7=new Date(); f7.setDate(f7.getDate()+7); const f7s=f7.toISOString().split('T')[0];
   document.getElementById('stats-heading').textContent=`${currentUser} 的學習統計`;
   const [{count:total},{count:reviewed},{count:dueToday},{data:revs},{data:upcoming}]=await Promise.all([
-    sb.from('words').select('id',{count:'exact',head:true}).eq('username',currentUser),
+    sb.from('words').select('id',{count:'exact',head:true}),
     sb.from('reviews').select('word_id',{count:'exact',head:true}).eq('username',currentUser),
     sb.from('reviews').select('word_id',{count:'exact',head:true}).eq('username',currentUser).lte('due_date',today),
     sb.from('reviews').select('interval,repetitions').eq('username',currentUser),
