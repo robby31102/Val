@@ -604,6 +604,16 @@ function renderStudy() {
   const card=queue[qIdx], pct=Math.round(qIdx/queue.length*100);
   const isNew=!card._review, sents=safeSentences(card.sentences);
 
+  const hintsHTML = settings.showHints
+    ? '<div class="keyboard-hints">'
+      + '<kbd>' + codeToDisplay(settings.shortcuts.flip)  + '</kbd> 翻面 &nbsp;'
+      + '<kbd>' + codeToDisplay(settings.shortcuts.again) + '</kbd> Again &nbsp;'
+      + '<kbd>' + codeToDisplay(settings.shortcuts.hard)  + '</kbd> Hard &nbsp;'
+      + '<kbd>' + codeToDisplay(settings.shortcuts.good)  + '</kbd> Good &nbsp;'
+      + '<kbd>' + codeToDisplay(settings.shortcuts.easy)  + '</kbd> Easy &nbsp;'
+      + '<kbd>' + codeToDisplay(settings.shortcuts.audio) + '</kbd> 播音'
+      + '</div>'
+    : '';
   el.innerHTML=`
     <div class="session-header">
       <div class="progress-wrap">
@@ -640,7 +650,7 @@ function renderStudy() {
             <button class="r-btn r-good"  onclick="rate(2)">Good<span class="r-sub">正常</span></button>
             <button class="r-btn r-easy"  onclick="rate(3)">Easy<span class="r-sub">長間隔</span></button>
           </div>
-          ${settings.showHints?`<div class="keyboard-hints"><kbd>\${codeToDisplay(settings.shortcuts.flip)}</kbd> 翻面 &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.again)}</kbd> Again &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.hard)}</kbd> Hard &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.good)}</kbd> Good &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.easy)}</kbd> Easy &nbsp;<kbd>\${codeToDisplay(settings.shortcuts.audio)}</kbd> 播音</div>`:''}
+          ${hintsHTML}
         </div>
       </div>
     </div>`;
