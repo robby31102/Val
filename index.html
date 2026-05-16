@@ -324,6 +324,12 @@
       .rating-grid { grid-template-columns:repeat(2,1fr); }
       .modal { padding:22px 20px; } .auth-card { padding:32px 24px; }
     }
+
+    .streak-badge { display:flex; align-items:center; gap:3px; font-family:'DM Mono',monospace; font-size:12px; background:var(--surface2); padding:3px 10px; border-radius:20px; border:1px solid var(--border); color:var(--text-dim); white-space:nowrap; }
+    .streak-badge.hot { color:var(--orange); border-color:var(--orange); background:var(--orange-dim); font-weight:500; }
+    .achievement { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface2); border-radius:var(--r-sm); border:1px solid var(--border); transition:all .2s; }
+    .achievement.locked { opacity:0.3; filter:grayscale(0.6); }
+    .achievement.unlocked { border-color:var(--accent); background:var(--accent-dim); }
   </style>
 </head>
 <body>
@@ -372,11 +378,12 @@
       <button class="nav-link active" id="nav-study"  onclick="switchView('study')">📖 學習</button>
       <button class="nav-link"        id="nav-manage" onclick="switchView('manage')">📚 單字庫</button>
       <button class="nav-link"        id="nav-stats"  onclick="switchView('stats')">📊 統計</button>
-      <button class="nav-link"        id="nav-settings" onclick="switchView('settings')">⚙ 設定</button>
       <button class="nav-link"        id="nav-social"   onclick="switchView('social')">👥 社交</button>
     </div>
     <div class="nav-right">
       <span id="nav-remain" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)"></span>
+      <span class="streak-badge" id="nav-streak" style="display:none">🔥 <span id="streak-count">1</span> 天</span>
+      <button class="nav-link" id="nav-settings" onclick="switchView('settings')" style="padding:6px 12px">⚙ 設定</button>
       <span class="nav-user" id="nav-username"></span>
       <button class="btn-icon" onclick="switchUser()" title="切換使用者" style="font-size:14px">↩</button>
     </div>
@@ -403,6 +410,7 @@
       <div class="stats-grid" id="stats-grid"></div>
       <div class="stats-block"><div class="block-title">間隔分佈</div><div id="dist-bars"></div></div>
       <div class="stats-block"><div class="block-title">即將到期（未來 7 天）</div><div id="upcoming-list"></div></div>
+      <div id="achievements-section"></div>
     </section>
     <section class="view" id="view-settings">
       <div style="max-width:680px;margin:0 auto">
@@ -494,6 +502,7 @@ function showApp() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('app').classList.add('active');
   document.getElementById('nav-username').textContent = currentUser;
+  updateStreakDisplay();
 }
 
 async function boot() {
@@ -605,6 +614,7 @@ function renderStudy() {
     return;
   }
   if (qIdx>=queue.length) {
+    if (queue.length>0) launchConfetti();
     el.innerHTML=`<div class="center-state"><div class="state-icon">🏆</div><div class="state-title">今日完成！</div><div class="state-sub">共複習了 ${queue.length} 個單字，${currentUser} 繼續加油！</div><div class="state-actions"><button class="btn btn-ghost" onclick="switchView('stats')">查看統計</button><button class="btn btn-primary" onclick="loadSession()">再來一輪</button></div></div>`;
     return;
   }
@@ -671,6 +681,7 @@ async function rate(rating) {
   const card=queue[qIdx], rev=card._review||{interval:0,easiness:2.5,repetitions:0};
   const next=sm2(rev.interval,rev.easiness,rev.repetitions,rating);
   await sb.from('reviews').upsert({word_id:card.id,username:currentUser,...next,last_reviewed:new Date().toISOString()},{onConflict:'word_id'});
+  updateStreak();
   qIdx++; flipped=false; renderStudy(); updateNavRemain();
 }
 
@@ -811,6 +822,8 @@ async function loadStats(){
   const counts=buckets.map(b=>(revs||[]).filter(r=>r.interval>=b.min&&r.interval<=b.max).length), maxCnt=Math.max(...counts,1);
   document.getElementById('dist-bars').innerHTML=buckets.map((b,i)=>`<div class="dist-row"><div class="dist-lbl">${b.l}</div><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(counts[i]/maxCnt*100).toFixed(1)}%;background:${b.c}"></div></div><div class="dist-cnt">${counts[i]}</div></div>`).join('');
   document.getElementById('upcoming-list').innerHTML=upcoming?.length?upcoming.map(r=>`<div class="upcoming-row"><span style="font-family:'DM Mono',monospace;color:var(--accent)">${esc(r.words?.word||'')}</span><span style="color:var(--text-muted);font-size:12px">${r.due_date}</span></div>`).join(''):'<div style="color:var(--text-muted);font-size:13px;padding:8px 0">未來 7 天無排程</div>';
+  const curStreak = getStreak().streak || 0;
+  document.getElementById('achievements-section').innerHTML = renderAchievements(reviewed||0, mature, curStreak);
 }
 
 function todayStr(){return new Date().toISOString().split('T')[0];}
@@ -820,6 +833,96 @@ function escJs(s){return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"');}
 let toastT;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
 ['word-modal','csv-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});});
+
+// ── STREAK ────────────────────────────────────────────────
+function getStreak() {
+  try { return JSON.parse(localStorage.getItem('wv_streak_' + currentUser) || '{}'); } catch { return {}; }
+}
+
+function updateStreak() {
+  const today = todayStr();
+  const data = getStreak();
+  if (data.lastDate === today) return;
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yStr = yesterday.toISOString().split('T')[0];
+  const streak = data.lastDate === yStr ? (data.streak || 0) + 1 : 1;
+  localStorage.setItem('wv_streak_' + currentUser, JSON.stringify({ lastDate: today, streak }));
+  updateStreakDisplay();
+}
+
+function updateStreakDisplay() {
+  const data = getStreak();
+  const streak = data.streak || 0;
+  const el = document.getElementById('nav-streak');
+  const cnt = document.getElementById('streak-count');
+  if (!el || !cnt) return;
+  if (streak >= 1) {
+    el.style.display = 'flex';
+    cnt.textContent = streak;
+    el.classList.toggle('hot', streak >= 3);
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ── CONFETTI ───────────────────────────────────────────────
+function launchConfetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;';
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const colors = ['#a85818','#2560b0','#257845','#d4a040','#b03030','#8855cc','#20a0a0'];
+  const pieces = Array.from({length: 110}, () => ({
+    x: Math.random() * innerWidth, y: -20 - Math.random() * 100,
+    w: 7 + Math.random() * 9, h: 3 + Math.random() * 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 3, vy: 1.5 + Math.random() * 3.5,
+    angle: Math.random() * Math.PI * 2, va: (Math.random() - 0.5) * 0.18,
+  }));
+  let t = 0, raf;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    t++;
+    pieces.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.angle += p.va; p.vy += 0.04;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, 1 - t / 130);
+      ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    if (t < 150) raf = requestAnimationFrame(draw); else canvas.remove();
+  }
+  draw();
+}
+
+// ── ACHIEVEMENTS ───────────────────────────────────────────
+function renderAchievements(reviewed, mature, streak) {
+  const badges = [
+    { icon:'🌱', name:'踏出第一步', desc:'複習第一個單字',          unlocked: reviewed >= 1 },
+    { icon:'📖', name:'勤奮學習',   desc:'累積複習 20 個單字',      unlocked: reviewed >= 20 },
+    { icon:'📚', name:'詞彙達人',   desc:'累積複習 100 個單字',     unlocked: reviewed >= 100 },
+    { icon:'🎓', name:'語言學家',   desc:'累積複習 300 個單字',     unlocked: reviewed >= 300 },
+    { icon:'💎', name:'老朋友',     desc:'擁有 10 個成熟單字（≥21 天）', unlocked: mature >= 10 },
+    { icon:'🔥', name:'三天連勝',   desc:'連續 3 天學習',           unlocked: streak >= 3 },
+    { icon:'⚡', name:'週不間斷',   desc:'連續 7 天學習',           unlocked: streak >= 7 },
+    { icon:'🏆', name:'月不間斷',   desc:'連續 30 天學習',          unlocked: streak >= 30 },
+  ];
+  return `<div class="stats-block">
+    <div class="block-title">成就徽章</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px">
+      ${badges.map(b => `
+        <div class="achievement ${b.unlocked ? 'unlocked' : 'locked'}">
+          <span style="font-size:1.7rem;flex-shrink:0;line-height:1">${b.icon}</span>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">${b.name}</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:2px">${b.desc}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
 
 // ── SETTINGS ──────────────────────────────────────────────
 const DEFAULT_SETTINGS = {
@@ -1024,8 +1127,13 @@ async function loadSocial() {
   const userMap = {};
   allReviews.forEach(r => { if (!userMap[r.username]) userMap[r.username] = []; userMap[r.username].push(r); });
   const isAdmin = currentUser === 'rbb';
-  const users = Object.keys(userMap).sort();
-  el.innerHTML = users.map(u => {
+  const medals = ['🥇','🥈','🥉'];
+  const ranked = Object.keys(userMap).sort((a, b) => {
+    const ma = userMap[a].filter(r => r.interval >= 21).length;
+    const mb = userMap[b].filter(r => r.interval >= 21).length;
+    return mb - ma || userMap[b].length - userMap[a].length;
+  });
+  el.innerHTML = ranked.map((u, idx) => {
     const revs = userMap[u];
     const total = revs.length;
     const dueToday = revs.filter(r => r.due_date <= today).length;
@@ -1035,10 +1143,16 @@ async function loadSocial() {
     const lastStr = lastReviewed ? lastReviewed.split('T')[0] : '—';
     const isSelf = u === currentUser;
     const canDelete = isAdmin && u !== 'rbb';
+    const rankLabel = idx < 3
+      ? `<span style="font-size:1.5rem;line-height:1">${medals[idx]}</span>`
+      : `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);min-width:20px">#${idx+1}</span>`;
     return `
       <div class="stats-block" style="margin-bottom:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="font-family:'Playfair Display',serif;font-size:1.15rem">${esc(u)}${isSelf ? ' <span style="font-size:11px;color:var(--accent);font-family:\'Noto Sans TC\',sans-serif">(你)</span>' : ''}</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            ${rankLabel}
+            <div style="font-family:'Playfair Display',serif;font-size:1.15rem">${esc(u)}${isSelf ? ' <span style="font-size:11px;color:var(--accent);font-family:\'Noto Sans TC\',sans-serif">(你)</span>' : ''}</div>
+          </div>
           ${canDelete ? `<button class="btn btn-ghost" onclick="deleteUser('${escJs(u)}')" style="font-size:12px;color:var(--red);border-color:var(--red)">🗑 刪除資料</button>` : ''}
         </div>
         <div class="stats-grid" style="margin-bottom:0">
