@@ -9,585 +9,280 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg:          #0d0c0b;
-      --surface:     #161513;
-      --surface2:    #1e1c1a;
-      --surface3:    #272420;
-      --border:      #2e2b27;
-      --text:        #f0ebe0;
-      --text-dim:    #8a8278;
-      --text-muted:  #5a5450;
-      --accent:      #d4922a;
-      --accent-lt:   #f0b040;
-      --accent-dim:  rgba(212,146,42,.14);
-      --red:         #c85050;
-      --red-dim:     rgba(200,80,80,.13);
-      --orange:      #d47830;
-      --orange-dim:  rgba(212,120,48,.13);
-      --blue:        #4878c8;
-      --blue-dim:    rgba(72,120,200,.13);
-      --green:       #50a870;
-      --green-dim:   rgba(80,168,112,.13);
-      --r:           12px;
-      --r-sm:        8px;
+      --bg:         #f5f3ef;
+      --surface:    #ffffff;
+      --surface2:   #f0ece5;
+      --surface3:   #e8e3d9;
+      --border:     #d8d2c8;
+      --text:       #1c1917;
+      --text-dim:   #6a6460;
+      --text-muted: #9a9490;
+      --accent:     #a85818;
+      --accent-lt:  #c06820;
+      --accent-dim: rgba(168,88,24,.11);
+      --red:        #b03030;
+      --red-dim:    rgba(176,48,48,.09);
+      --orange:     #b05820;
+      --orange-dim: rgba(176,88,32,.09);
+      --blue:       #2560b0;
+      --blue-dim:   rgba(37,96,176,.09);
+      --green:      #257845;
+      --green-dim:  rgba(37,120,69,.09);
+      --r:          12px;
+      --r-sm:       8px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html, body { height: 100%; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', sans-serif; font-weight: 300; line-height: 1.6; font-size: 15px; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Noto Sans TC', sans-serif;
-      font-weight: 300;
-      line-height: 1.6;
-      font-size: 15px;
+    /* SCREENS */
+    .screen { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 24px; }
+    .screen.active { display: flex; }
+
+    .auth-card {
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px;
+      padding: 48px; width: 100%; max-width: 440px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.08), 0 2px 10px rgba(0,0,0,.04);
     }
+    .logo { font-family: 'Playfair Display', serif; font-size: 2.4rem; color: var(--accent); letter-spacing: -0.02em; margin-bottom: 6px; }
+    .logo-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; }
 
-    /* ── CONFIG ─────────────────────────────── */
-    #config-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .config-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 48px;
-      width: 100%;
-      max-width: 480px;
-    }
-
-    .logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      color: var(--accent-lt);
-      letter-spacing: -0.02em;
-      margin-bottom: 6px;
-    }
-
-    .logo-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 36px; }
-
-    /* ── FORM ELEMENTS ──────────────────────── */
+    /* FORMS */
     .form-group { margin-bottom: 16px; }
-
-    label {
-      display: block;
-      font-size: 11px;
-      letter-spacing: .09em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 6px;
+    label { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+    input[type=text], input[type=url], input[type=number], textarea, select {
+      width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text); font-family: inherit;
+      font-size: 14px; padding: 10px 14px; outline: none;
+      transition: border-color .15s, box-shadow .15s;
     }
-
-    input[type=text], input[type=url], input[type=number],
-    textarea, select {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      padding: 10px 14px;
-      outline: none;
-      transition: border-color .15s;
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent-lt); box-shadow: 0 0 0 3px var(--accent-dim); background: var(--surface);
     }
-    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
     textarea { resize: vertical; min-height: 72px; }
-    select option { background: var(--surface2); }
+    select option { background: var(--surface); }
 
-    /* ── BUTTONS ────────────────────────────── */
+    /* BUTTONS */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 9px 18px;
-      border: 1px solid transparent;
-      border-radius: var(--r-sm);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 400;
-      cursor: pointer;
-      transition: all .15s;
-      white-space: nowrap;
-      line-height: 1;
+      display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
+      border: 1.5px solid transparent; border-radius: var(--r-sm);
+      font-family: inherit; font-size: 13px; font-weight: 400;
+      cursor: pointer; transition: all .15s; white-space: nowrap; line-height: 1;
     }
-    .btn-primary { background: var(--accent); color: #0d0c0b; font-weight: 500; border-color: var(--accent); }
+    .btn-primary { background: var(--accent); color: #fff; font-weight: 500; border-color: var(--accent); }
     .btn-primary:hover { background: var(--accent-lt); border-color: var(--accent-lt); }
     .btn-ghost { background: transparent; color: var(--text-dim); border-color: var(--border); }
     .btn-ghost:hover { background: var(--surface2); color: var(--text); }
-    .btn-danger { background: var(--red-dim); color: var(--red); border-color: transparent; }
-    .btn-danger:hover { background: rgba(200,80,80,.22); }
     .btn-full { width: 100%; justify-content: center; }
-
     .btn-icon {
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      padding: 5px 7px;
-      border-radius: 6px;
-      font-size: 15px;
-      transition: all .15s;
-      display: inline-flex;
-      align-items: center;
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      padding: 5px 7px; border-radius: 6px; font-size: 15px;
+      transition: all .15s; display: inline-flex; align-items: center;
     }
     .btn-icon:hover { color: var(--text); background: var(--surface2); }
 
-    /* ── APP LAYOUT ─────────────────────────── */
+    /* APP */
     #app { display: none; flex-direction: column; min-height: 100vh; }
     #app.active { display: flex; }
 
     nav {
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      height: 54px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      gap: 0;
+      display: flex; align-items: center; padding: 0 24px; height: 54px;
+      background: var(--surface); border-bottom: 1.5px solid var(--border);
+      box-shadow: 0 1px 8px rgba(0,0,0,.05); position: sticky; top: 0; z-index: 100;
     }
-
-    .nav-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.15rem;
-      color: var(--accent-lt);
-      margin-right: 28px;
-      letter-spacing: -0.01em;
-    }
-
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--accent); margin-right: 28px; }
     .nav-links { display: flex; gap: 2px; flex: 1; }
-
     .nav-link {
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 13px;
-      color: var(--text-dim);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all .15s;
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; color: var(--text-dim);
+      background: transparent; border: none; cursor: pointer; font-family: inherit; transition: all .15s;
     }
     .nav-link:hover { color: var(--text); background: var(--surface2); }
-    .nav-link.active { color: var(--accent-lt); background: var(--accent-dim); }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text-dim);
-    }
+    .nav-link.active { color: var(--accent); background: var(--accent-dim); }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .nav-user { font-size: 12px; color: var(--text-dim); background: var(--surface2); padding: 3px 12px; border-radius: 20px; border: 1px solid var(--border); }
 
     main { flex: 1; }
-
-    .view {
-      display: none;
-      min-height: calc(100vh - 54px);
-      padding: 28px 24px;
-    }
+    .view { display: none; min-height: calc(100vh - 54px); padding: 28px 24px; }
     .view.active { display: block; }
 
-    /* ── STUDY VIEW ─────────────────────────── */
-    #view-study {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      padding: 28px 24px;
-    }
+    /* STUDY */
+    #view-study { display: none; flex-direction: column; align-items: center; padding: 28px 24px; }
     #view-study.active { display: flex; }
 
-    .session-header {
-      width: 100%;
-      max-width: 560px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 22px;
-    }
-
+    .session-header { width: 100%; max-width: 560px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .progress-wrap { display: flex; align-items: center; gap: 10px; }
     .progress-bar { width: 140px; height: 3px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
     .progress-label { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-
-    .badge {
-      font-size: 11px;
-      padding: 3px 10px;
-      border-radius: 4px;
-      font-weight: 400;
-      letter-spacing: .03em;
-    }
-    .badge-new { background: var(--blue-dim); color: var(--blue); }
+    .badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+    .badge-new    { background: var(--blue-dim);   color: var(--blue);   }
     .badge-review { background: var(--accent-dim); color: var(--accent); }
 
-    /* Card */
     .card-scene { width: 100%; max-width: 560px; }
-
     .flashcard {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px 40px;
-      transition: transform .15s;
+      width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 36px 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07), 0 1px 6px rgba(0,0,0,.04);
     }
-    .flashcard:active { transform: scale(.995); }
-
-    /* Card faces — toggle visibility */
     .card-front-face { display: block; }
     .card-back-face  { display: none; }
-
     .flashcard.flipped .card-front-face { display: none; }
     .flashcard.flipped .card-back-face  { display: block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .card-back-face { animation: fadeUp .22s ease; }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .card-back-face { animation: fadeUp .25s ease; }
-
-    /* Front */
-    .card-word {
-      font-family: 'Playfair Display', serif;
-      font-size: 3rem;
-      font-weight: 700;
-      line-height: 1.05;
-      margin-bottom: 8px;
-      letter-spacing: -0.02em;
-    }
-    .card-pos {
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      color: var(--accent);
-      margin-bottom: 40px;
-    }
-    .card-front-foot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    .card-word { font-family:'Playfair Display',serif; font-size:3rem; font-weight:700; line-height:1.05; letter-spacing:-0.02em; color:var(--text); margin-bottom:8px; }
+    .card-pos  { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent); margin-bottom:40px; }
+    .card-front-foot { display:flex; align-items:center; justify-content:space-between; }
     .speak-btn {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 15px;
-      transition: all .15s;
+      width:38px; height:38px; border-radius:50%; background:var(--surface2);
+      border:1.5px solid var(--border); color:var(--text-dim);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:16px; transition:all .15s; flex-shrink:0;
     }
-    .speak-btn:hover { background: var(--surface3); color: var(--text); }
+    .speak-btn:hover { background:var(--surface3); border-color:var(--accent-lt); }
+    .card-hint { font-size:12px; color:var(--text-muted); }
 
-    .card-hint { font-size: 12px; color: var(--text-muted); }
+    .back-word  { font-family:'Playfair Display',serif; font-size:1.7rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .back-pos   { font-family:'DM Mono',monospace; font-size:12px; color:var(--accent); margin-bottom:14px; }
+    .back-def   { font-size:1.05rem; color:var(--text); padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--border); }
+    .back-sentences { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+    .back-sentence  { font-size:13px; color:var(--text-dim); padding:8px 12px; background:var(--surface2); border-left:3px solid var(--accent-dim); border-radius:0 6px 6px 0; font-style:italic; line-height:1.5; }
+    .back-notes { font-size:12px; color:var(--text-muted); background:var(--surface2); border:1px solid var(--border); padding:8px 12px; border-radius:6px; margin-bottom:14px; }
+    .divider { height:1px; background:var(--border); margin:16px 0; }
 
-    /* Back */
-    .back-word {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.7rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .back-pos {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      color: var(--accent);
-      margin-bottom: 14px;
-    }
-    .back-def {
-      font-size: 1rem;
-      color: var(--text);
-      margin-bottom: 14px;
-    }
-    .back-sentences { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-    .back-sentence {
-      font-size: 13px;
-      color: var(--text-dim);
-      padding-left: 12px;
-      border-left: 2px solid var(--border);
-      font-style: italic;
-      font-family: 'DM Mono', monospace;
-      line-height: 1.5;
-    }
-    .back-notes {
-      font-size: 12px;
-      color: var(--text-muted);
-      background: var(--surface2);
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-bottom: 14px;
-    }
-    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .rating-label-row { font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+    .rating-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .r-btn { padding:10px 4px; border:1.5px solid; border-radius:var(--r-sm); font-family:inherit; font-size:13px; font-weight:500; cursor:pointer; transition:all .12s; text-align:center; line-height:1; }
+    .r-btn:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.12); }
+    .r-again { background:var(--red-dim);    border-color:var(--red);    color:var(--red);    }
+    .r-hard  { background:var(--orange-dim); border-color:var(--orange); color:var(--orange); }
+    .r-good  { background:var(--blue-dim);   border-color:var(--blue);   color:var(--blue);   }
+    .r-easy  { background:var(--green-dim);  border-color:var(--green);  color:var(--green);  }
+    .r-sub { display:block; font-size:10px; opacity:.6; margin-top:3px; font-weight:300; }
+    .keyboard-hints { margin-top:12px; text-align:center; font-size:11px; color:var(--text-muted); }
+    kbd { display:inline-block; background:var(--surface2); border:1px solid var(--border); border-radius:3px; padding:1px 5px; font-family:'DM Mono',monospace; font-size:10px; }
 
-    /* Rating */
-    .rating-label-row {
-      font-size: 11px;
-      letter-spacing: .07em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-    .rating-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-    .r-btn {
-      padding: 10px 4px;
-      border: 1px solid;
-      border-radius: var(--r-sm);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .12s;
-      text-align: center;
-      line-height: 1;
-    }
-    .r-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
-    .r-again  { background: var(--red-dim);    border-color: var(--red);    color: var(--red);    }
-    .r-hard   { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
-    .r-good   { background: var(--blue-dim);   border-color: var(--blue);   color: var(--blue);   }
-    .r-easy   { background: var(--green-dim);  border-color: var(--green);  color: var(--green);  }
-    .r-sub { display: block; font-size: 10px; opacity: .65; margin-top: 3px; font-weight: 300; }
+    .center-state { display:flex; flex-direction:column; align-items:center; text-align:center; padding:60px 24px; }
+    .state-icon  { font-size:3rem; margin-bottom:16px; }
+    .state-title { font-family:'Playfair Display',serif; font-size:1.6rem; margin-bottom:8px; }
+    .state-sub   { color:var(--text-dim); font-size:14px; margin-bottom:24px; }
+    .state-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
 
-    .keyboard-hints {
-      margin-top: 12px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: .04em;
-    }
-    kbd {
-      display: inline-block;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1px 5px;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-    }
+    /* MANAGE */
+    #view-manage { max-width:960px; margin:0 auto; }
+    .manage-header { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .search-wrap { position:relative; flex:1; min-width:180px; }
+    .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:14px; pointer-events:none; }
+    .search-wrap input { padding-left:36px; }
+    .manage-count { font-size:12px; color:var(--text-dim); white-space:nowrap; }
 
-    /* Empty / done */
-    .center-state {
-      display: flex; flex-direction: column; align-items: center;
-      text-align: center; padding: 60px 24px; max-width: 400px;
-    }
-    .state-icon { font-size: 3rem; margin-bottom: 16px; }
-    .state-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 8px; }
-    .state-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 24px; }
-    .state-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .table-wrap { border:1.5px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:16px; overflow-x:auto; box-shadow:0 2px 12px rgba(0,0,0,.04); }
+    table { width:100%; border-collapse:collapse; min-width:560px; }
+    thead tr { background:var(--surface2); }
+    th { text-align:left; padding:11px 14px; font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--text-muted); font-weight:400; border-bottom:1.5px solid var(--border); white-space:nowrap; }
+    td { padding:11px 14px; border-bottom:1px solid var(--border); font-size:14px; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { transition:background .1s; }
+    tbody tr:hover { background:var(--surface2); }
+    .td-word { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent); font-weight:500; }
+    .td-pos  { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); }
+    .td-def  { color:var(--text-dim); max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .td-ivl  { font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace; }
+    .td-act  { text-align:right; white-space:nowrap; }
+    .due-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; }
+    .due-new    { background:var(--blue-dim);   color:var(--blue);   }
+    .due-today  { background:var(--accent-dim); color:var(--accent); }
+    .due-future { background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); font-family:'DM Mono',monospace; font-size:10px; }
 
-    /* ── MANAGE VIEW ─────────────────────────── */
-    #view-manage { max-width: 960px; margin: 0 auto; }
+    .pagination { display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+    .pg-btn { padding:5px 11px; background:var(--surface); border:1.5px solid var(--border); border-radius:6px; color:var(--text-dim); font-size:13px; cursor:pointer; font-family:inherit; transition:all .15s; }
+    .pg-btn:hover:not(:disabled) { background:var(--surface2); color:var(--text); border-color:var(--accent); }
+    .pg-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .pg-btn:disabled { opacity:.3; cursor:not-allowed; }
 
-    .manage-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
+    /* MODAL */
+    .modal-overlay { position:fixed; inset:0; background:rgba(50,40,30,.45); backdrop-filter:blur(4px); z-index:200; display:flex; align-items:flex-start; justify-content:center; padding:32px 16px; overflow-y:auto; }
+    .modal-overlay.hidden { display:none; }
+    .modal { background:var(--surface); border:1.5px solid var(--border); border-radius:16px; width:100%; max-width:540px; padding:30px 32px; box-shadow:0 20px 60px rgba(0,0,0,.14); animation:fadeUp .2s ease; }
+    .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+    .modal-title { font-family:'Playfair Display',serif; font-size:1.3rem; }
+    .sentences-list { display:flex; flex-direction:column; gap:7px; margin-bottom:7px; }
+    .sent-row { display:flex; gap:6px; align-items:center; }
+    .sent-row input { flex:1; }
+    .modal-foot { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
 
-    .search-wrap { position: relative; flex: 1; min-width: 180px; }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
-    .search-wrap input { padding-left: 36px; }
+    /* STATS */
+    #view-stats { max-width:720px; margin:0 auto; }
+    .stats-title { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:28px; }
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px; margin-bottom:20px; }
+    .stat-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:22px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+    .stat-value { font-family:'DM Mono',monospace; font-size:2rem; font-weight:500; color:var(--accent); line-height:1; margin-bottom:6px; }
+    .stat-lbl { font-size:12px; color:var(--text-dim); }
+    .stats-block { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:22px; margin-bottom:16px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+    .block-title { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); margin-bottom:14px; }
+    .dist-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .dist-lbl { width:64px; font-size:12px; color:var(--text-dim); }
+    .dist-bar-wrap { flex:1; height:7px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+    .dist-bar { height:100%; border-radius:3px; transition:width .6s ease; }
+    .dist-cnt { width:36px; text-align:right; font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace; }
+    .upcoming-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
+    .upcoming-row:last-child { border-bottom:none; }
 
-    .manage-count { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+    #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; border-radius:8px; padding:9px 20px; font-size:13px; z-index:1000; opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+    #toast.show { opacity:1; }
+    .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
-    .table-wrap {
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      overflow: hidden;
-      margin-bottom: 16px;
-      overflow-x: auto;
-    }
-
-    table { width: 100%; border-collapse: collapse; min-width: 560px; }
-    thead tr { background: var(--surface2); }
-    th {
-      text-align: left;
-      padding: 11px 14px;
-      font-size: 11px;
-      letter-spacing: .07em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      font-weight: 400;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tbody tr { transition: background .1s; }
-    tbody tr:hover { background: var(--surface2); }
-
-    .td-word { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent-lt); font-weight: 500; }
-    .td-pos  { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-dim); }
-    .td-def  { color: var(--text-dim); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .td-ivl  { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-    .td-act  { text-align: right; white-space: nowrap; }
-
-    .due-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
-    .due-new    { background: var(--blue-dim);   color: var(--blue);   }
-    .due-today  { background: var(--accent-dim); color: var(--accent); }
-    .due-future { background: var(--surface3);   color: var(--text-muted); font-family: 'DM Mono', monospace; font-size: 10px; }
-
-    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
-    .pg-btn {
-      padding: 5px 11px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text-dim);
-      font-size: 13px;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all .15s;
-    }
-    .pg-btn:hover:not(:disabled) { background: var(--surface2); color: var(--text); }
-    .pg-btn.on { background: var(--accent-dim); color: var(--accent-lt); border-color: var(--accent-dim); }
-    .pg-btn:disabled { opacity: .35; cursor: not-allowed; }
-
-    /* ── MODAL ──────────────────────────────── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.72);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 32px 16px;
-      overflow-y: auto;
-    }
-    .modal-overlay.hidden { display: none; }
-
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 540px;
-      padding: 30px 32px;
-      animation: fadeUp .2s ease;
-    }
-    .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
-
-    .sentences-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 7px; }
-    .sent-row { display: flex; gap: 6px; align-items: center; }
-    .sent-row input { flex: 1; }
-
-    .modal-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
-
-    /* ── STATS VIEW ─────────────────────────── */
-    #view-stats { max-width: 720px; margin: 0 auto; }
-
-    .stats-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 28px; }
-
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px,1fr)); gap: 14px; margin-bottom: 24px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 22px; }
-    .stat-value { font-family: 'DM Mono', monospace; font-size: 2rem; font-weight: 500; color: var(--accent-lt); line-height: 1; margin-bottom: 6px; }
-    .stat-lbl { font-size: 12px; color: var(--text-dim); }
-
-    .stats-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 22px; margin-bottom: 16px; }
-    .block-title { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; }
-
-    .dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .dist-lbl { width: 64px; font-size: 12px; color: var(--text-dim); }
-    .dist-bar-wrap { flex: 1; height: 7px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-    .dist-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
-    .dist-cnt { width: 36px; text-align: right; font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
-
-    .upcoming-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px;
-    }
-    .upcoming-row:last-child { border-bottom: none; }
-
-    /* ── TOAST ──────────────────────────────── */
-    #toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 20px;
-      font-size: 13px;
-      z-index: 1000;
-      opacity: 0; transition: opacity .2s;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-    #toast.show { opacity: 1; }
-
-    /* ── LOADING ─────────────────────────────── */
-    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── RESPONSIVE ─────────────────────────── */
-    @media (max-width: 600px) {
-      nav { padding: 0 14px; }
-      .nav-logo { margin-right: 14px; }
-      .nav-link { padding: 6px 10px; font-size: 12px; }
-      .view { padding: 20px 14px; }
-      #view-study { padding: 20px 14px; }
-      .card-word { font-size: 2.2rem; }
-      .flashcard { padding: 26px 24px; }
-      .rating-grid { grid-template-columns: repeat(2,1fr); }
-      .modal { padding: 22px 20px; }
+    @media (max-width:600px) {
+      nav { padding:0 14px; } .nav-logo { margin-right:14px; } .nav-link { padding:6px 10px; font-size:12px; }
+      .view { padding:20px 14px; } #view-study { padding:20px 14px; }
+      .card-word { font-size:2.2rem; } .flashcard { padding:24px 22px; }
+      .rating-grid { grid-template-columns:repeat(2,1fr); }
+      .modal { padding:22px 20px; } .auth-card { padding:32px 24px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════
-     CONFIG SCREEN
-═══════════════════════════════════════════════ -->
-<div id="config-screen">
-  <div class="config-card">
+<!-- LOGIN -->
+<div class="screen" id="login-screen">
+  <div class="auth-card">
     <div class="logo">WordVault</div>
-    <div class="logo-sub">連接你的 Supabase 資料庫開始使用</div>
-
+    <div class="logo-sub">你的英文單字學習夥伴</div>
     <div class="form-group">
-      <label>Supabase Project URL</label>
-      <input type="url" id="cfg-url" placeholder="https://pppvksybkrxzivxsavfi.supabase.co">
+      <label>你的名字</label>
+      <input type="text" id="username-input" placeholder="例如：Robby" maxlength="30"
+             style="font-size:16px;padding:12px 16px"
+             onkeydown="if(event.key==='Enter') doLogin()">
     </div>
-    <div class="form-group">
-      <label>Supabase Anon Key</label>
-      <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcHZrc3lia3J4eml2eHNhdmZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzkzMzYsImV4cCI6MjA5NDUxNTMzNn0.wSHTFyUboxLkKX-EzoQs8FfIgAFT0Qp7Dthr1vEv5uc">
-    </div>
-    <div class="form-group">
-      <label>每日目標題數（新字 + 複習）</label>
-      <input type="number" id="cfg-daily" value="20" min="5" max="200">
-    </div>
-    <div class="form-group">
-      <label>每日最多新單字</label>
-      <input type="number" id="cfg-new" value="5" min="1" max="50">
-    </div>
-
-    <button class="btn btn-primary btn-full" onclick="saveConfig()" style="margin-top:8px">
-      連接並開始
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:4px;padding:12px">
+      開始學習 →
     </button>
-
-    <div id="cfg-error" style="margin-top:12px;color:var(--red);font-size:13px;display:none"></div>
-
-    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-dim);line-height:2">
-      初次使用請先執行 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px">supabase_setup.sql</code> 建立資料表<br>
-      設定值儲存在此裝置的 localStorage，不會上傳
+    <div id="login-error" style="margin-top:10px;color:var(--red);font-size:13px;display:none"></div>
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);line-height:2">
+      輸入任何名字即可開始，每個名字的單字庫獨立存放<br>
+      下次用同一個名字登入就能繼續進度
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     MAIN APP
-═══════════════════════════════════════════════ -->
+<!-- CONFIG (FALLBACK) -->
+<div class="screen" id="config-screen">
+  <div class="auth-card">
+    <div class="logo">WordVault</div>
+    <div class="logo-sub">連接 Supabase 資料庫</div>
+    <div class="form-group"><label>Supabase Project URL</label><input type="url" id="cfg-url" placeholder="https://xxxx.supabase.co"></div>
+    <div class="form-group"><label>Anon Key（Legacy）</label><input type="text" id="cfg-key" placeholder="eyJhbGci..."></div>
+    <div class="form-group"><label>每日總題數</label><input type="number" id="cfg-daily" value="20" min="5" max="200"></div>
+    <div class="form-group"><label>每日最多新單字</label><input type="number" id="cfg-new" value="5" min="1" max="50"></div>
+    <button class="btn btn-primary btn-full" onclick="saveConfig()" style="margin-top:4px">連接</button>
+    <div id="cfg-error" style="margin-top:10px;color:var(--red);font-size:13px;display:none"></div>
+  </div>
+</div>
+
+<!-- APP -->
 <div id="app">
   <nav>
     <span class="nav-logo">WordVault</span>
@@ -597,356 +292,251 @@
       <button class="nav-link"        id="nav-stats"  onclick="switchView('stats')">📊 統計</button>
     </div>
     <div class="nav-right">
-      <span id="nav-remain" style="font-family:'DM Mono',monospace;font-size:13px"></span>
-      <button class="btn-icon" onclick="resetConfig()" title="重設連線">⚙</button>
+      <span id="nav-remain" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted)"></span>
+      <span class="nav-user" id="nav-username"></span>
+      <button class="btn-icon" onclick="switchUser()" title="切換使用者" style="font-size:14px">↩</button>
     </div>
   </nav>
-
   <main>
-    <!-- STUDY -->
-    <section class="view active" id="view-study">
-      <div id="study-inner"></div>
-    </section>
-
-    <!-- MANAGE -->
+    <section class="view active" id="view-study"><div id="study-inner"></div></section>
     <section class="view" id="view-manage">
       <div class="manage-header">
-        <div class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-input" placeholder="搜尋單字或定義..." oninput="debounceSearch()">
-        </div>
+        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="搜尋單字或定義..." oninput="debounceSearch()"></div>
         <span class="manage-count" id="manage-count"></span>
         <button class="btn btn-ghost" onclick="openCsvModal()">⬆ 匯入 CSV</button>
         <button class="btn btn-primary" onclick="openWordModal(null)">＋ 新增</button>
       </div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>單字</th><th>詞性</th><th>定義</th>
-              <th>到期</th><th>間隔</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="word-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">
-              <span class="spinner"></span>
-            </td></tr>
-          </tbody>
+          <thead><tr><th>單字</th><th>詞性</th><th>定義</th><th>到期</th><th>間隔</th><th></th></tr></thead>
+          <tbody id="word-tbody"><tr><td colspan="6" style="text-align:center;padding:40px"><span class="spinner"></span></td></tr></tbody>
         </table>
       </div>
       <div class="pagination" id="pagination"></div>
     </section>
-
-    <!-- STATS -->
     <section class="view" id="view-stats">
-      <div class="stats-title">學習統計</div>
+      <div class="stats-title" id="stats-heading">學習統計</div>
       <div class="stats-grid" id="stats-grid"></div>
-      <div class="stats-block">
-        <div class="block-title">間隔分佈</div>
-        <div id="dist-bars"></div>
-      </div>
-      <div class="stats-block">
-        <div class="block-title">即將到期（未來 7 天）</div>
-        <div id="upcoming-list"></div>
-      </div>
+      <div class="stats-block"><div class="block-title">間隔分佈</div><div id="dist-bars"></div></div>
+      <div class="stats-block"><div class="block-title">即將到期（未來 7 天）</div><div id="upcoming-list"></div></div>
     </section>
   </main>
 </div>
 
-<!-- ════════════════════════════════════════════
-     WORD MODAL
-═══════════════════════════════════════════════ -->
+<!-- WORD MODAL -->
 <div class="modal-overlay hidden" id="word-modal">
   <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="modal-title">新增單字</div>
-      <button class="btn-icon" onclick="closeWordModal()">✕</button>
-    </div>
-
-    <div class="form-group">
-      <label>英文單字 *</label>
-      <input type="text" id="f-word" placeholder="e.g. ephemeral">
-    </div>
-    <div class="form-group">
-      <label>詞性</label>
+    <div class="modal-head"><div class="modal-title" id="modal-title">新增單字</div><button class="btn-icon" onclick="closeWordModal()">✕</button></div>
+    <div class="form-group"><label>英文單字 *</label><input type="text" id="f-word" placeholder="e.g. ephemeral"></div>
+    <div class="form-group"><label>詞性</label>
       <select id="f-pos">
-        <option value="">—</option>
-        <option value="n.">n. 名詞</option>
-        <option value="v.">v. 動詞</option>
-        <option value="adj.">adj. 形容詞</option>
-        <option value="adv.">adv. 副詞</option>
-        <option value="prep.">prep. 介詞</option>
-        <option value="conj.">conj. 連接詞</option>
-        <option value="phrase">phrase 片語</option>
-        <option value="idiom">idiom 慣用語</option>
+        <option value="">—</option><option value="n.">n. 名詞</option><option value="v.">v. 動詞</option>
+        <option value="adj.">adj. 形容詞</option><option value="adv.">adv. 副詞</option>
+        <option value="prep.">prep. 介詞</option><option value="conj.">conj. 連接詞</option>
+        <option value="phrase">phrase 片語</option><option value="idiom">idiom 慣用語</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>中文定義 *</label>
-      <textarea id="f-def" placeholder="短暫的；轉瞬即逝的" rows="2"></textarea>
-    </div>
+    <div class="form-group"><label>中文定義 *</label><textarea id="f-def" placeholder="短暫的；轉瞬即逝的" rows="2"></textarea></div>
     <div class="form-group">
       <label>例句</label>
       <div class="sentences-list" id="sentences-list"></div>
-      <button class="btn btn-ghost" onclick="addSentRow()" style="font-size:12px;padding:5px 12px;margin-top:2px">＋ 新增例句</button>
+      <button class="btn btn-ghost" onclick="addSentRow()" style="font-size:12px;padding:5px 12px;margin-top:4px">＋ 新增例句</button>
     </div>
-    <div class="form-group">
-      <label>個人備註</label>
-      <textarea id="f-notes" placeholder="記憶口訣、相關詞、易混淆字..." rows="2"></textarea>
-    </div>
-
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeWordModal()">取消</button>
-      <button class="btn btn-primary" onclick="submitWord()">儲存</button>
-    </div>
+    <div class="form-group"><label>個人備註</label><textarea id="f-notes" placeholder="記憶口訣、相關詞..." rows="2"></textarea></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeWordModal()">取消</button><button class="btn btn-primary" onclick="submitWord()">儲存</button></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     CSV MODAL
-═══════════════════════════════════════════════ -->
+<!-- CSV MODAL -->
 <div class="modal-overlay hidden" id="csv-modal">
   <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title">批次匯入 CSV</div>
-      <button class="btn-icon" onclick="closeCsvModal()">✕</button>
-    </div>
-    <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px;line-height:1.8">
-      欄位順序：<code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:12px">word, pos, definition, sentence1, sentence2, notes</code><br>
-      第一列為標題列（自動跳過）。pos、sentence、notes 可空白。
+    <div class="modal-head"><div class="modal-title">批次匯入 CSV</div><button class="btn-icon" onclick="closeCsvModal()">✕</button></div>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px;line-height:2">
+      欄位：<code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:12px">word, pos, definition, sentence1, sentence2, notes</code><br>
+      第一列為標題列（自動跳過）。
     </p>
-    <div class="form-group">
-      <label>貼上 CSV 內容</label>
-      <textarea id="csv-input" rows="10"
-        placeholder="word,pos,definition,sentence1,sentence2,notes
+    <div class="form-group"><label>貼上 CSV 內容</label>
+      <textarea id="csv-input" rows="9" placeholder="word,pos,definition,sentence1,sentence2,notes
 ephemeral,adj.,短暫的；轉瞬即逝的,Life is ephemeral.,,
-ubiquitous,adj.,無所不在的,Smartphones are ubiquitous.,,
-tenacious,adj.,堅韌的；頑強的,,,"></textarea>
+ubiquitous,adj.,無所不在的,Smartphones are ubiquitous.,,"></textarea>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeCsvModal()">取消</button>
-      <button class="btn btn-primary" onclick="importCsv()">開始匯入</button>
-    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeCsvModal()">取消</button><button class="btn btn-primary" onclick="importCsv()">開始匯入</button></div>
   </div>
 </div>
 
 <div id="toast"></div>
 
-<!-- ════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════ -->
 <script>
 const { createClient } = supabase;
 
-// ── STATE ──────────────────────────────────────
+// ══════════════════════════════════════════════
+//  ★ 填入你的 Supabase 設定（只需要一次）★
+// ══════════════════════════════════════════════
+const SUPABASE_URL = 'https://pppvksybkrxzivxsavfi.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwcHZrc3lia3J4eml2eHNhdmZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MzkzMzYsImV4cCI6MjA5NDUxNTMzNn0.wSHTFyUboxLkKX-EzoQs8FfIgAFT0Qp7Dthr1vEv5uc';
+const DAILY_GOAL   = 20;
+const NEW_PER_DAY  = 5;
+// ══════════════════════════════════════════════
+
 let sb = null, cfg = null;
+let currentUser = localStorage.getItem('wv_user') || null;
 let queue = [], qIdx = 0, flipped = false;
 let manageWords = [], manageTotal = 0, managePage = 1;
 const PAGE = 20;
 let searchQ = '', searchTimer = null, editId = null;
 
-// ── INIT ────────────────────────────────────────
-async function init() {
-  const raw = localStorage.getItem('wv_config');
-  if (!raw) return;
-  cfg = JSON.parse(raw);
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('app').classList.remove('active');
+  document.getElementById(id).classList.add('active');
+}
+function showApp() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('app').classList.add('active');
+  document.getElementById('nav-username').textContent = currentUser;
+}
+
+async function boot() {
+  if (!currentUser) {
+    showScreen('login-screen');
+    setTimeout(() => document.getElementById('username-input').focus(), 80);
+    return;
+  }
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    cfg = { url: SUPABASE_URL, key: SUPABASE_KEY, daily: DAILY_GOAL, newPerDay: NEW_PER_DAY };
+  } else {
+    const raw = localStorage.getItem('wv_config');
+    if (!raw) { showScreen('config-screen'); return; }
+    cfg = JSON.parse(raw);
+  }
   sb = createClient(cfg.url, cfg.key);
   showApp();
   await loadSession();
 }
 
-async function saveConfig() {
-  const url   = document.getElementById('cfg-url').value.trim();
-  const key   = document.getElementById('cfg-key').value.trim();
-  const daily = parseInt(document.getElementById('cfg-daily').value) || 20;
-  const newPD = parseInt(document.getElementById('cfg-new').value) || 5;
-
-  if (!url || !key) { showCfgError('請填入 URL 和 Key'); return; }
-
-  cfg = { url, key, daily, newPerDay: newPD };
-  sb = createClient(url, key);
-
-  // Quick connection test
-  const { error } = await sb.from('words').select('id', { count: 'exact', head: true });
-  if (error) { showCfgError('連線失敗：' + error.message + '（請確認 URL/Key 及資料表是否已建立）'); return; }
-
-  localStorage.setItem('wv_config', JSON.stringify(cfg));
-  showApp();
-  await loadSession();
+function doLogin() {
+  const name = document.getElementById('username-input').value.trim();
+  if (!name) {
+    const e = document.getElementById('login-error');
+    e.textContent = '請輸入你的名字'; e.style.display = 'block'; return;
+  }
+  currentUser = name;
+  localStorage.setItem('wv_user', name);
+  boot();
 }
 
-function showCfgError(msg) {
-  const el = document.getElementById('cfg-error');
-  el.textContent = msg; el.style.display = 'block';
-}
-
-function showApp() {
-  document.getElementById('config-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-}
-
-function resetConfig() {
-  if (!confirm('確定要重設連線設定？')) return;
-  localStorage.removeItem('wv_config');
+function switchUser() {
+  if (!confirm(`切換使用者？\n（${currentUser} 的資料不會消失，下次輸入相同名字可以回來）`)) return;
+  localStorage.removeItem('wv_user');
+  currentUser = null;
   location.reload();
 }
 
-// ── NAVIGATION ──────────────────────────────────
+async function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url || !key) { showCfgErr('請填入 URL 和 Key'); return; }
+  const testSb = createClient(url, key);
+  const { error } = await testSb.from('words').select('id', { count: 'exact', head: true });
+  if (error) { showCfgErr('連線失敗：' + error.message); return; }
+  cfg = { url, key, daily: parseInt(document.getElementById('cfg-daily').value)||20, newPerDay: parseInt(document.getElementById('cfg-new').value)||5 };
+  localStorage.setItem('wv_config', JSON.stringify(cfg));
+  sb = testSb; showApp(); await loadSession();
+}
+function showCfgErr(msg) { const e=document.getElementById('cfg-error'); e.textContent=msg; e.style.display='block'; }
+
 function switchView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-' + v).classList.add('active');
-  document.getElementById('nav-' + v).classList.add('active');
-  if (v === 'manage') loadManage();
-  if (v === 'stats')  loadStats();
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  if (v==='manage') loadManage();
+  if (v==='stats')  loadStats();
 }
 
-// ── SRS — SM-2 SIMPLIFIED ───────────────────────
-// rating: 0=Again  1=Hard  2=Good  3=Easy
 function sm2(interval, easiness, reps, rating) {
   let ni, ne, nr;
-
-  if (rating === 0) {
-    nr = 0; ni = 1;
-    ne = Math.max(1.3, easiness - 0.2);
-  } else {
-    nr = reps + 1;
-    const delta = 0.1 - (3 - rating) * (0.08 + (3 - rating) * 0.02);
-    ne = Math.max(1.3, easiness + delta);
-
-    if (nr === 1)      ni = 1;
-    else if (nr === 2) ni = 6;
-    else               ni = Math.round(interval * ne);
-
-    if (rating === 1) ni = Math.max(1, Math.round(ni * 0.8));
-    if (rating === 3) ni = Math.round(ni * 1.3);
+  if (rating===0) { nr=0; ni=1; ne=Math.max(1.3,easiness-0.2); }
+  else {
+    nr=reps+1;
+    const d=0.1-(3-rating)*(0.08+(3-rating)*0.02);
+    ne=Math.max(1.3,easiness+d);
+    if(nr===1) ni=1; else if(nr===2) ni=6; else ni=Math.round(interval*ne);
+    if(rating===1) ni=Math.max(1,Math.round(ni*0.8));
+    if(rating===3) ni=Math.round(ni*1.3);
   }
-
-  // ±15% jitter to avoid clustering
-  const jitter = 1 + (Math.random() * 0.3 - 0.15);
-  ni = Math.max(1, Math.round(ni * jitter));
-
-  const due = new Date();
-  due.setDate(due.getDate() + ni);
-
-  return { interval: ni, easiness: ne, repetitions: nr, due_date: due.toISOString().split('T')[0] };
+  const jitter=1+(Math.random()*0.3-0.15);
+  ni=Math.max(1,Math.round(ni*jitter));
+  const due=new Date(); due.setDate(due.getDate()+ni);
+  return { interval:ni, easiness:ne, repetitions:nr, due_date:due.toISOString().split('T')[0] };
 }
 
-// ── SESSION LOADING ─────────────────────────────
 async function loadSession() {
-  const today = todayStr();
-  const daily    = cfg.daily    || 20;
-  const newLimit = cfg.newPerDay || 5;
+  const today=todayStr(), daily=cfg.daily||20, newLimit=cfg.newPerDay||5;
 
-  // 1. Due reviews
-  const { data: dueRows } = await sb
-    .from('reviews')
-    .select('*, words(*)')
-    .lte('due_date', today)
-    .order('due_date')
-    .limit(daily);
+  const { data: dueRows } = await sb.from('reviews').select('*, words(*)')
+    .eq('username',currentUser).lte('due_date',today).order('due_date').limit(daily);
+  const reviewCards = (dueRows||[]).filter(r=>r.words).map(r=>({...r.words, _review:r}));
 
-  const reviewCards = (dueRows || [])
-    .filter(r => r.words)
-    .map(r => ({ ...r.words, _review: r }));
-
-  // 2. New words (no review row yet)
-  const newSlots = Math.min(newLimit, daily - reviewCards.length);
-  let newCards = [];
-  if (newSlots > 0) {
-    // Get IDs that already have a review record
-    const { data: existingRev } = await sb.from('reviews').select('word_id');
-    const reviewedIds = (existingRev || []).map(r => r.word_id);
-
-    let q = sb.from('words')
-      .select('id,word,pos,definition,sentences,notes')
-      .order('created_at')
-      .limit(newSlots);
-
-    if (reviewedIds.length > 0) {
-      q = q.not('id', 'in', `(${reviewedIds.join(',')})`);
-    }
-
+  const newSlots=Math.min(newLimit, daily-reviewCards.length);
+  let newCards=[];
+  if (newSlots>0) {
+    const { data: revIds } = await sb.from('reviews').select('word_id').eq('username',currentUser);
+    const reviewedIds=(revIds||[]).map(r=>r.word_id);
+    let q=sb.from('words').select('*').eq('username',currentUser).order('created_at').limit(newSlots);
+    if (reviewedIds.length>0) q=q.not('id','in',`(${reviewedIds.join(',')})`);
     const { data: fresh } = await q;
-    newCards = (fresh || []).map(w => ({ ...w, _review: null }));
+    newCards=(fresh||[]).map(w=>({...w, _review:null}));
   }
 
-  // Merge: shuffle new cards into review queue
-  const merged = [...reviewCards];
-  newCards.forEach((c, i) => merged.splice(i * 3, 0, c)); // interleave
-
-  queue = merged;
-  qIdx = 0; flipped = false;
-  renderStudy();
-  updateNavRemain();
+  const merged=[...reviewCards];
+  newCards.forEach((c,i)=>merged.splice(i*3,0,c));
+  queue=merged; qIdx=0; flipped=false;
+  renderStudy(); updateNavRemain();
 }
 
 function renderStudy() {
-  const el = document.getElementById('study-inner');
-
-  if (queue.length === 0) {
-    el.innerHTML = `<div class="center-state">
-      <div class="state-icon">📭</div>
-      <div class="state-title">還沒有單字</div>
-      <div class="state-sub">前往單字庫新增或匯入 CSV 開始學習</div>
-      <div class="state-actions">
-        <button class="btn btn-primary" onclick="switchView('manage')">前往單字庫</button>
-      </div></div>`;
+  const el=document.getElementById('study-inner');
+  if (queue.length===0) {
+    el.innerHTML=`<div class="center-state"><div class="state-icon">📭</div><div class="state-title">還沒有單字</div><div class="state-sub">前往單字庫新增單字或匯入 CSV 開始學習</div><div class="state-actions"><button class="btn btn-primary" onclick="switchView('manage')">前往單字庫</button></div></div>`;
+    return;
+  }
+  if (qIdx>=queue.length) {
+    el.innerHTML=`<div class="center-state"><div class="state-icon">🏆</div><div class="state-title">今日完成！</div><div class="state-sub">共複習了 ${queue.length} 個單字，${currentUser} 繼續加油！</div><div class="state-actions"><button class="btn btn-ghost" onclick="switchView('stats')">查看統計</button><button class="btn btn-primary" onclick="loadSession()">再來一輪</button></div></div>`;
     return;
   }
 
-  if (qIdx >= queue.length) {
-    el.innerHTML = `<div class="center-state">
-      <div class="state-icon">🏆</div>
-      <div class="state-title">今日完成！</div>
-      <div class="state-sub">共複習了 ${queue.length} 個單字</div>
-      <div class="state-actions">
-        <button class="btn btn-ghost"    onclick="switchView('stats')">查看統計</button>
-        <button class="btn btn-primary"  onclick="loadSession()">再來一輪</button>
-      </div></div>`;
-    return;
-  }
+  const card=queue[qIdx], pct=Math.round(qIdx/queue.length*100);
+  const isNew=!card._review, sents=safeSentences(card.sentences);
 
-  const card = queue[qIdx];
-  const pct  = Math.round(qIdx / queue.length * 100);
-  const isNew = !card._review;
-  const sents = safeSentences(card.sentences);
-
-  el.innerHTML = `
+  el.innerHTML=`
     <div class="session-header">
       <div class="progress-wrap">
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-        <span class="progress-label">${qIdx}/${queue.length}</span>
+        <span class="progress-label">${qIdx} / ${queue.length}</span>
       </div>
-      <span class="badge ${isNew ? 'badge-new' : 'badge-review'}">${isNew ? '新單字' : '複習'}</span>
+      <span class="badge ${isNew?'badge-new':'badge-review'}">${isNew?'新單字':'複習'}</span>
     </div>
-
     <div class="card-scene">
       <div class="flashcard" id="flashcard" onclick="handleCardClick(event)">
-
-        <!-- FRONT -->
         <div class="card-front-face">
           <div class="card-word">${esc(card.word)}</div>
-          ${card.pos ? `<div class="card-pos">${esc(card.pos)}</div>` : '<div style="height:8px"></div>'}
+          ${card.pos?`<div class="card-pos">${esc(card.pos)}</div>`:'<div style="height:8px"></div>'}
           <div class="card-front-foot">
-            <button class="speak-btn" onclick="speak(event,'${escJs(card.word)}')" title="播放發音">🔊</button>
-            <span class="card-hint">點擊卡片 或 按空白鍵 翻面</span>
+            <button class="speak-btn" onclick="speak(event,'${escJs(card.word)}')">🔊</button>
+            <span class="card-hint">點擊卡片或按 Space 翻面</span>
             <button class="btn btn-primary" onclick="doFlip(event)">顯示答案</button>
           </div>
         </div>
-
-        <!-- BACK -->
         <div class="card-back-face">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
             <div class="back-word">${esc(card.word)}</div>
-            <button class="speak-btn" onclick="speak(event,'${escJs(card.word)}')" style="flex-shrink:0">🔊</button>
+            <button class="speak-btn" onclick="speak(event,'${escJs(card.word)}')">🔊</button>
           </div>
-          ${card.pos ? `<div class="back-pos">${esc(card.pos)}</div>` : ''}
+          ${card.pos?`<div class="back-pos">${esc(card.pos)}</div>`:''}
           <div class="back-def">${esc(card.definition)}</div>
-
-          ${sents.length ? `<div class="back-sentences">${sents.map(s=>`<div class="back-sentence">${esc(s)}</div>`).join('')}</div>` : ''}
-          ${card.notes ? `<div class="back-notes">💡 ${esc(card.notes)}</div>` : ''}
-
+          ${sents.length?`<div class="back-sentences">${sents.map(s=>`<div class="back-sentence">${esc(s)}</div>`).join('')}</div>`:''}
+          ${card.notes?`<div class="back-notes">💡 ${esc(card.notes)}</div>`:''}
           <div class="divider"></div>
           <div class="rating-label-row">熟悉程度</div>
           <div class="rating-grid">
@@ -955,378 +545,165 @@ function renderStudy() {
             <button class="r-btn r-good"  onclick="rate(2)">Good<span class="r-sub">正常</span></button>
             <button class="r-btn r-easy"  onclick="rate(3)">Easy<span class="r-sub">長間隔</span></button>
           </div>
-          <div class="keyboard-hints">
-            <kbd>Space</kbd> 翻面 &nbsp;
-            <kbd>1</kbd> Again &nbsp;<kbd>2</kbd> Hard &nbsp;<kbd>3</kbd> Good &nbsp;<kbd>4</kbd> Easy
-          </div>
+          <div class="keyboard-hints"><kbd>Space</kbd> 翻面 &nbsp; <kbd>1</kbd> Again &nbsp;<kbd>2</kbd> Hard &nbsp;<kbd>3</kbd> Good &nbsp;<kbd>4</kbd> Easy</div>
         </div>
-
       </div>
     </div>`;
 }
 
-function handleCardClick(e) {
-  if (e.target.tagName === 'BUTTON') return;
-  doFlip(e);
-}
-function doFlip(e) {
-  if (e) e.stopPropagation();
-  if (flipped) return;
-  flipped = true;
-  document.getElementById('flashcard').classList.add('flipped');
-}
+function handleCardClick(e) { if(e.target.tagName==='BUTTON') return; doFlip(e); }
+function doFlip(e) { if(e) e.stopPropagation(); if(flipped) return; flipped=true; document.getElementById('flashcard').classList.add('flipped'); }
 
 async function rate(rating) {
-  const card = queue[qIdx];
-  const rev  = card._review || { interval: 0, easiness: 2.5, repetitions: 0 };
-  const next = sm2(rev.interval, rev.easiness, rev.repetitions, rating);
-
-  await sb.from('reviews').upsert(
-    { word_id: card.id, ...next, last_reviewed: new Date().toISOString() },
-    { onConflict: 'word_id' }
-  );
-
-  qIdx++;
-  flipped = false;
-  renderStudy();
-  updateNavRemain();
+  const card=queue[qIdx], rev=card._review||{interval:0,easiness:2.5,repetitions:0};
+  const next=sm2(rev.interval,rev.easiness,rev.repetitions,rating);
+  await sb.from('reviews').upsert({word_id:card.id,username:currentUser,...next,last_reviewed:new Date().toISOString()},{onConflict:'word_id'});
+  qIdx++; flipped=false; renderStudy(); updateNavRemain();
 }
 
 function updateNavRemain() {
-  const rem = Math.max(0, queue.length - qIdx);
-  const el  = document.getElementById('nav-remain');
-  if (el) el.textContent = rem > 0 ? `${rem} 題` : '';
+  const rem=Math.max(0,queue.length-qIdx);
+  const el=document.getElementById('nav-remain');
+  if(el) el.textContent=rem>0?`${rem} 題`:'';
 }
 
-// ── TTS ─────────────────────────────────────────
-function speak(e, text) {
-  if (e) e.stopPropagation();
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US'; u.rate = 0.85;
-  window.speechSynthesis.speak(u);
-}
+function speak(e,text) { if(e) e.stopPropagation(); if(!window.speechSynthesis) return; window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=0.85; window.speechSynthesis.speak(u); }
 
-// ── KEYBOARD SHORTCUTS ──────────────────────────
-document.addEventListener('keydown', e => {
-  const view = document.querySelector('.view.active')?.id;
-  if (view !== 'view-study') return;
-  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-
-  if (e.code === 'Space') { e.preventDefault(); doFlip(null); return; }
-  if (!flipped) return;
-  const map = { '1': 0, '2': 1, '3': 2, '4': 3 };
-  if (map[e.key] !== undefined) rate(map[e.key]);
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('app').classList.contains('active')) return;
+  if(document.querySelector('.view.active')?.id!=='view-study') return;
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  if(e.code==='Space'){e.preventDefault();doFlip(null);return;}
+  if(!flipped) return;
+  const map={'1':0,'2':1,'3':2,'4':3};
+  if(map[e.key]!==undefined) rate(map[e.key]);
 });
 
-// ── MANAGE VIEW ─────────────────────────────────
 async function loadManage() {
-  const from = (managePage - 1) * PAGE;
-  const to   = from + PAGE - 1;
-  const today = todayStr();
-
-  let q = sb.from('words')
-    .select('id,word,pos,definition,created_at', { count: 'exact' })
-    .order('word')
-    .range(from, to);
-
-  if (searchQ) q = q.or(`word.ilike.%${searchQ}%,definition.ilike.%${searchQ}%`);
-
-  const { data: words, count } = await q;
-  manageWords = words || [];
-  manageTotal = count || 0;
-
-  document.getElementById('manage-count').textContent = `共 ${manageTotal} 個單字`;
-
-  // Fetch review info for this page
-  const ids = manageWords.map(w => w.id);
-  let revMap = {};
-  if (ids.length) {
-    const { data: revs } = await sb.from('reviews').select('word_id,due_date,interval').in('word_id', ids);
-    (revs || []).forEach(r => revMap[r.word_id] = r);
-  }
-
-  const tbody = document.getElementById('word-tbody');
-  if (!manageWords.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--text-muted)">
-      ${searchQ ? '找不到符合的單字' : '尚無單字'}
-    </td></tr>`;
-  } else {
-    tbody.innerHTML = manageWords.map(w => {
-      const r = revMap[w.id];
-      let badge = !r
-        ? '<span class="due-badge due-new">新</span>'
-        : r.due_date <= today
-          ? '<span class="due-badge due-today">今日</span>'
-          : `<span class="due-badge due-future">${r.due_date}</span>`;
-
-      return `<tr>
-        <td class="td-word">${esc(w.word)}</td>
-        <td class="td-pos">${esc(w.pos||'—')}</td>
-        <td class="td-def" title="${esc(w.definition)}">${esc(w.definition)}</td>
-        <td>${badge}</td>
-        <td class="td-ivl">${r ? r.interval+'d' : '—'}</td>
-        <td class="td-act">
-          <button class="btn-icon" onclick="openWordModal('${w.id}')" title="編輯">✏</button>
-          <button class="btn-icon" onclick="delWord('${w.id}')" title="刪除" style="color:var(--red)">🗑</button>
-        </td>
-      </tr>`;
+  const today=todayStr(), from=(managePage-1)*PAGE, to=from+PAGE-1;
+  let q=sb.from('words').select('id,word,pos,definition,created_at',{count:'exact'}).eq('username',currentUser).order('word').range(from,to);
+  if(searchQ) q=q.or(`word.ilike.%${searchQ}%,definition.ilike.%${searchQ}%`);
+  const {data:words,count}=await q;
+  manageWords=words||[]; manageTotal=count||0;
+  document.getElementById('manage-count').textContent=`共 ${manageTotal} 個單字`;
+  const ids=manageWords.map(w=>w.id); let revMap={};
+  if(ids.length){ const {data:revs}=await sb.from('reviews').select('word_id,due_date,interval').in('word_id',ids); (revs||[]).forEach(r=>revMap[r.word_id]=r); }
+  const tbody=document.getElementById('word-tbody');
+  if(!manageWords.length){ tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--text-muted)">${searchQ?'找不到符合的單字':'尚無單字，點右上角「＋ 新增」開始'}</td></tr>`; }
+  else {
+    tbody.innerHTML=manageWords.map(w=>{
+      const r=revMap[w.id];
+      const badge=!r?'<span class="due-badge due-new">新</span>':r.due_date<=today?'<span class="due-badge due-today">今日</span>':`<span class="due-badge due-future">${r.due_date}</span>`;
+      return `<tr><td class="td-word">${esc(w.word)}</td><td class="td-pos">${esc(w.pos||'—')}</td><td class="td-def" title="${esc(w.definition)}">${esc(w.definition)}</td><td>${badge}</td><td class="td-ivl">${r?r.interval+'d':'—'}</td><td class="td-act"><button class="btn-icon" onclick="openWordModal('${w.id}')">✏</button><button class="btn-icon" onclick="delWord('${w.id}')" style="color:var(--red)">🗑</button></td></tr>`;
     }).join('');
   }
-
   renderPagination();
 }
 
 function renderPagination() {
-  const pages = Math.ceil(manageTotal / PAGE);
-  const el = document.getElementById('pagination');
-  if (pages <= 1) { el.innerHTML = ''; return; }
-
-  let h = `<button class="pg-btn" onclick="goPage(${managePage-1})" ${managePage===1?'disabled':''}>‹</button>`;
-  for (let p = 1; p <= pages; p++) {
-    if (p === 1 || p === pages || Math.abs(p - managePage) <= 2)
-      h += `<button class="pg-btn ${p===managePage?'on':''}" onclick="goPage(${p})">${p}</button>`;
-    else if (Math.abs(p - managePage) === 3)
-      h += `<span style="color:var(--text-muted);padding:0 2px">…</span>`;
+  const pages=Math.ceil(manageTotal/PAGE), el=document.getElementById('pagination');
+  if(pages<=1){el.innerHTML='';return;}
+  let h=`<button class="pg-btn" onclick="goPage(${managePage-1})" ${managePage===1?'disabled':''}>‹</button>`;
+  for(let p=1;p<=pages;p++){
+    if(p===1||p===pages||Math.abs(p-managePage)<=2) h+=`<button class="pg-btn ${p===managePage?'on':''}" onclick="goPage(${p})">${p}</button>`;
+    else if(Math.abs(p-managePage)===3) h+=`<span style="color:var(--text-muted);padding:0 4px">…</span>`;
   }
-  h += `<button class="pg-btn" onclick="goPage(${managePage+1})" ${managePage===pages?'disabled':''}>›</button>`;
-  el.innerHTML = h;
+  h+=`<button class="pg-btn" onclick="goPage(${managePage+1})" ${managePage===pages?'disabled':''}>›</button>`;
+  el.innerHTML=h;
 }
+function goPage(p){managePage=p;loadManage();}
+function debounceSearch(){clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchQ=document.getElementById('search-input').value.trim();managePage=1;loadManage();},280);}
 
-function goPage(p) { managePage = p; loadManage(); }
-
-function debounceSearch() {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    searchQ = document.getElementById('search-input').value.trim();
-    managePage = 1;
-    loadManage();
-  }, 280);
-}
-
-// ── WORD MODAL ──────────────────────────────────
 async function openWordModal(id) {
-  editId = id;
-  document.getElementById('modal-title').textContent = id ? '編輯單字' : '新增單字';
-  document.getElementById('f-word').value  = '';
-  document.getElementById('f-pos').value   = '';
-  document.getElementById('f-def').value   = '';
-  document.getElementById('f-notes').value = '';
-  document.getElementById('sentences-list').innerHTML = '';
-
-  if (id) {
-    const { data: w } = await sb.from('words').select('*').eq('id', id).single();
-    if (w) {
-      document.getElementById('f-word').value  = w.word;
-      document.getElementById('f-pos').value   = w.pos || '';
-      document.getElementById('f-def').value   = w.definition;
-      document.getElementById('f-notes').value = w.notes || '';
-      safeSentences(w.sentences).forEach(s => addSentRow(s));
-    }
-  } else {
-    addSentRow();
-  }
-
+  editId=id;
+  document.getElementById('modal-title').textContent=id?'編輯單字':'新增單字';
+  ['f-word','f-def','f-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('f-pos').value='';
+  document.getElementById('sentences-list').innerHTML='';
+  if(id){
+    const {data:w}=await sb.from('words').select('*').eq('id',id).single();
+    if(w){document.getElementById('f-word').value=w.word;document.getElementById('f-pos').value=w.pos||'';document.getElementById('f-def').value=w.definition;document.getElementById('f-notes').value=w.notes||'';safeSentences(w.sentences).forEach(s=>addSentRow(s));}
+  } else { addSentRow(); }
   document.getElementById('word-modal').classList.remove('hidden');
-  setTimeout(() => document.getElementById('f-word').focus(), 50);
+  setTimeout(()=>document.getElementById('f-word').focus(),50);
 }
-
-function closeWordModal() {
-  document.getElementById('word-modal').classList.add('hidden');
-  editId = null;
-}
-
-function addSentRow(val = '') {
-  const div = document.createElement('div');
-  div.className = 'sent-row';
-  div.innerHTML = `
-    <input type="text" placeholder="Enter an example sentence..." value="${esc(val)}">
-    <button class="btn-icon" onclick="this.parentElement.remove()" style="color:var(--text-muted)">✕</button>`;
+function closeWordModal(){document.getElementById('word-modal').classList.add('hidden');editId=null;}
+function addSentRow(val=''){
+  const div=document.createElement('div'); div.className='sent-row';
+  div.innerHTML=`<input type="text" placeholder="Enter an example sentence..." value="${esc(val)}"><button class="btn-icon" onclick="this.parentElement.remove()" style="color:var(--text-muted)">✕</button>`;
   document.getElementById('sentences-list').appendChild(div);
 }
-
 async function submitWord() {
-  const word = document.getElementById('f-word').value.trim();
-  const def  = document.getElementById('f-def').value.trim();
-  if (!word || !def) { showToast('單字和定義為必填'); return; }
-
-  const sentences = [...document.querySelectorAll('#sentences-list input')]
-    .map(i => i.value.trim()).filter(Boolean);
-
-  const payload = {
-    word,
-    pos:       document.getElementById('f-pos').value || null,
-    definition: def,
-    sentences,
-    notes: document.getElementById('f-notes').value.trim() || null
-  };
-
-  if (editId) {
-    await sb.from('words').update(payload).eq('id', editId);
-    showToast('✓ 已更新');
-  } else {
-    await sb.from('words').insert(payload);
-    showToast('✓ 已新增');
-  }
-
-  closeWordModal();
-  loadManage();
+  const word=document.getElementById('f-word').value.trim(), def=document.getElementById('f-def').value.trim();
+  if(!word||!def){showToast('單字和定義為必填');return;}
+  const sentences=[...document.querySelectorAll('#sentences-list input')].map(i=>i.value.trim()).filter(Boolean);
+  const payload={username:currentUser,word,pos:document.getElementById('f-pos').value||null,definition:def,sentences,notes:document.getElementById('f-notes').value.trim()||null};
+  if(editId){await sb.from('words').update(payload).eq('id',editId);showToast('✓ 已更新');}
+  else{await sb.from('words').insert(payload);showToast('✓ 已新增');}
+  closeWordModal(); loadManage();
+}
+async function delWord(id){
+  if(!confirm('確定要刪除這個單字及其學習紀錄？')) return;
+  await sb.from('words').delete().eq('id',id);
+  showToast('已刪除'); loadManage();
+  queue=queue.filter(c=>c.id!==id);
 }
 
-async function delWord(id) {
-  if (!confirm('確定要刪除這個單字及其學習紀錄？此操作無法復原。')) return;
-  await sb.from('words').delete().eq('id', id);
-  showToast('已刪除');
-  loadManage();
-  queue = queue.filter(c => c.id !== id);
-  if (qIdx >= queue.length && qIdx > 0) qIdx--;
-}
-
-// ── CSV IMPORT ───────────────────────────────────
-function openCsvModal()  { document.getElementById('csv-modal').classList.remove('hidden'); }
-function closeCsvModal() { document.getElementById('csv-modal').classList.add('hidden'); }
-
-async function importCsv() {
-  const raw = document.getElementById('csv-input').value.trim();
-  if (!raw) return;
-
-  const lines = raw.split('\n').slice(1);
-  const rows = [];
-
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    const cols = parseCsvLine(line);
-    if (cols.length < 3) continue;
-    const [word, pos, definition, s1, s2, notes] = cols.map(c => c?.trim());
-    if (!word || !definition) continue;
-    rows.push({
-      word, pos: pos || null, definition,
-      sentences: [s1, s2].filter(Boolean),
-      notes: notes || null
-    });
+function openCsvModal(){document.getElementById('csv-modal').classList.remove('hidden');}
+function closeCsvModal(){document.getElementById('csv-modal').classList.add('hidden');}
+async function importCsv(){
+  const raw=document.getElementById('csv-input').value.trim(); if(!raw) return;
+  const rows=[];
+  for(const line of raw.split('\n').slice(1)){
+    if(!line.trim()) continue;
+    const cols=parseCsvLine(line); if(cols.length<3) continue;
+    const [word,pos,definition,s1,s2,notes]=cols.map(c=>c?.trim());
+    if(!word||!definition) continue;
+    rows.push({username:currentUser,word,pos:pos||null,definition,sentences:[s1,s2].filter(Boolean),notes:notes||null});
   }
-
-  if (!rows.length) { showToast('沒有有效的資料行'); return; }
-
-  const CHUNK = 100;
-  for (let i = 0; i < rows.length; i += CHUNK) {
-    const { error } = await sb.from('words').insert(rows.slice(i, i + CHUNK));
-    if (error) { showToast('匯入失敗：' + error.message); return; }
-  }
-
+  if(!rows.length){showToast('沒有有效的資料行');return;}
+  for(let i=0;i<rows.length;i+=100){const{error}=await sb.from('words').insert(rows.slice(i,i+100));if(error){showToast('匯入失敗：'+error.message);return;}}
   showToast(`✓ 成功匯入 ${rows.length} 個單字`);
-  closeCsvModal();
-  document.getElementById('csv-input').value = '';
-  loadManage();
+  closeCsvModal(); document.getElementById('csv-input').value=''; loadManage();
+}
+function parseCsvLine(line){
+  const r=[];let cur='',q=false;
+  for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&!q){q=true;continue;}if(c==='"'&&q&&line[i+1]==='"'){cur+='"';i++;continue;}if(c==='"'&&q){q=false;continue;}if(c===','&&!q){r.push(cur);cur='';continue;}cur+=c;}
+  r.push(cur);return r;
 }
 
-function parseCsvLine(line) {
-  const r = []; let cur = ''; let q = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"' && !q)            { q = true; continue; }
-    if (c === '"' && q && line[i+1]=== '"') { cur += '"'; i++; continue; }
-    if (c === '"' && q)             { q = false; continue; }
-    if (c === ',' && !q)            { r.push(cur); cur = ''; continue; }
-    cur += c;
-  }
-  r.push(cur);
-  return r;
-}
-
-// ── STATS VIEW ───────────────────────────────────
-async function loadStats() {
-  const today = todayStr();
-  const future7 = new Date(); future7.setDate(future7.getDate() + 7);
-  const f7str = future7.toISOString().split('T')[0];
-
-  const [
-    { count: total },
-    { count: reviewed },
-    { count: dueToday },
-    { data: revs },
-    { data: upcoming }
-  ] = await Promise.all([
-    sb.from('words').select('id', { count: 'exact', head: true }),
-    sb.from('reviews').select('word_id', { count: 'exact', head: true }),
-    sb.from('reviews').select('word_id', { count: 'exact', head: true }).lte('due_date', today),
-    sb.from('reviews').select('interval,repetitions'),
-    sb.from('reviews').select('due_date, words(word)').gt('due_date', today).lte('due_date', f7str).order('due_date').limit(14)
+async function loadStats(){
+  const today=todayStr(), f7=new Date(); f7.setDate(f7.getDate()+7); const f7s=f7.toISOString().split('T')[0];
+  document.getElementById('stats-heading').textContent=`${currentUser} 的學習統計`;
+  const [{count:total},{count:reviewed},{count:dueToday},{data:revs},{data:upcoming}]=await Promise.all([
+    sb.from('words').select('id',{count:'exact',head:true}).eq('username',currentUser),
+    sb.from('reviews').select('word_id',{count:'exact',head:true}).eq('username',currentUser),
+    sb.from('reviews').select('word_id',{count:'exact',head:true}).eq('username',currentUser).lte('due_date',today),
+    sb.from('reviews').select('interval,repetitions').eq('username',currentUser),
+    sb.from('reviews').select('due_date,words(word)').eq('username',currentUser).gt('due_date',today).lte('due_date',f7s).order('due_date').limit(14)
   ]);
-
-  const newWords = (total||0) - (reviewed||0);
-  const avgIvl   = revs?.length ? (revs.reduce((s,r)=>s+r.interval,0)/revs.length).toFixed(1) : 0;
-  const mature   = (revs||[]).filter(r=>r.interval >= 21).length;
-
-  document.getElementById('stats-grid').innerHTML = `
+  const newWords=(total||0)-(reviewed||0), avgIvl=revs?.length?(revs.reduce((s,r)=>s+r.interval,0)/revs.length).toFixed(1):0, mature=(revs||[]).filter(r=>r.interval>=21).length;
+  document.getElementById('stats-grid').innerHTML=`
     <div class="stat-card"><div class="stat-value">${total||0}</div><div class="stat-lbl">總單字數</div></div>
     <div class="stat-card"><div class="stat-value">${dueToday||0}</div><div class="stat-lbl">今日待複習</div></div>
     <div class="stat-card"><div class="stat-value">${newWords}</div><div class="stat-lbl">未開始單字</div></div>
     <div class="stat-card"><div class="stat-value">${mature}</div><div class="stat-lbl">成熟單字 ≥21d</div></div>
     <div class="stat-card"><div class="stat-value">${avgIvl}d</div><div class="stat-lbl">平均間隔天數</div></div>`;
-
-  const buckets = [
-    { l:'1 天',   min:1,  max:1,   c:'#c85050' },
-    { l:'2–6 天', min:2,  max:6,   c:'#d47830' },
-    { l:'1–4 週', min:7,  max:28,  c:'#4878c8' },
-    { l:'1–3 月', min:29, max:90,  c:'#50a870' },
-    { l:'3 月+',  min:91, max:Infinity, c:'#d4922a' }
-  ];
-  const counts  = buckets.map(b => (revs||[]).filter(r=>r.interval>=b.min&&r.interval<=b.max).length);
-  const maxCnt  = Math.max(...counts, 1);
-
-  document.getElementById('dist-bars').innerHTML = buckets.map((b,i) => `
-    <div class="dist-row">
-      <div class="dist-lbl">${b.l}</div>
-      <div class="dist-bar-wrap"><div class="dist-bar" style="width:${(counts[i]/maxCnt*100).toFixed(1)}%;background:${b.c}"></div></div>
-      <div class="dist-cnt">${counts[i]}</div>
-    </div>`).join('');
-
-  document.getElementById('upcoming-list').innerHTML = upcoming?.length
-    ? upcoming.map(r => `
-        <div class="upcoming-row">
-          <span style="font-family:'DM Mono',monospace;color:var(--accent-lt)">${esc(r.words?.word||'')}</span>
-          <span style="color:var(--text-muted);font-size:12px">${r.due_date}</span>
-        </div>`).join('')
-    : '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">未來 7 天無排程</div>';
+  const buckets=[{l:'1 天',min:1,max:1,c:'#b03030'},{l:'2–6 天',min:2,max:6,c:'#b05820'},{l:'1–4 週',min:7,max:28,c:'#2560b0'},{l:'1–3 月',min:29,max:90,c:'#257845'},{l:'3 月+',min:91,max:Infinity,c:'#a85818'}];
+  const counts=buckets.map(b=>(revs||[]).filter(r=>r.interval>=b.min&&r.interval<=b.max).length), maxCnt=Math.max(...counts,1);
+  document.getElementById('dist-bars').innerHTML=buckets.map((b,i)=>`<div class="dist-row"><div class="dist-lbl">${b.l}</div><div class="dist-bar-wrap"><div class="dist-bar" style="width:${(counts[i]/maxCnt*100).toFixed(1)}%;background:${b.c}"></div></div><div class="dist-cnt">${counts[i]}</div></div>`).join('');
+  document.getElementById('upcoming-list').innerHTML=upcoming?.length?upcoming.map(r=>`<div class="upcoming-row"><span style="font-family:'DM Mono',monospace;color:var(--accent)">${esc(r.words?.word||'')}</span><span style="color:var(--text-muted);font-size:12px">${r.due_date}</span></div>`).join(''):'<div style="color:var(--text-muted);font-size:13px;padding:8px 0">未來 7 天無排程</div>';
 }
 
-// ── UTILS ────────────────────────────────────────
-function todayStr() { return new Date().toISOString().split('T')[0]; }
-
-function safeSentences(val) {
-  if (!val) return [];
-  if (Array.isArray(val)) return val.filter(Boolean);
-  try { const p = JSON.parse(val); return Array.isArray(p) ? p.filter(Boolean) : []; } catch { return []; }
-}
-
-function esc(s) {
-  return String(s||'')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function escJs(s) {
-  return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"');
-}
-
+function todayStr(){return new Date().toISOString().split('T')[0];}
+function safeSentences(val){if(!val)return[];if(Array.isArray(val))return val.filter(Boolean);try{const p=JSON.parse(val);return Array.isArray(p)?p.filter(Boolean):[]}catch{return[];}}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escJs(s){return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"');}
 let toastT;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT);
-  toastT = setTimeout(() => t.classList.remove('show'), 2600);
-}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+['word-modal','csv-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});});
 
-// Close modals on overlay click
-['word-modal','csv-modal'].forEach(id => {
-  document.getElementById(id).addEventListener('click', function(e) {
-    if (e.target === this) this.classList.add('hidden');
-  });
-});
-
-// ── BOOT ─────────────────────────────────────────
-init();
+boot();
 </script>
 </body>
 </html>
